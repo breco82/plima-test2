@@ -2446,6 +2446,37 @@ body:not(.light-theme) .nautical-isobath-badge {
     border: 0.5px solid rgba(56, 189, 248, 0.25);
 }
 
+/* Nautical Depth Soundings (INT-1 Format with Subscript) */
+.nautical-sounding-divicon {
+    background: transparent !important;
+    border: none !important;
+}
+
+.nautical-sounding-badge {
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    font-style: italic;
+    color: #1e293b;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.5px;
+    text-shadow: 0 0 2px #ffffff, 0 0 4px #ffffff, 0 0 6px #ffffff;
+    white-space: nowrap;
+}
+
+.nautical-sounding-badge sub {
+    font-size: 0.7em;
+    font-weight: 700;
+    vertical-align: sub;
+    bottom: -0.2em;
+}
+
+body:not(.light-theme) .nautical-sounding-badge {
+    color: #f8fafc;
+    text-shadow: 0 0 2px #0f172a, 0 0 4px #0f172a, 0 0 6px #0f172a;
+}
+
 /* Tactical Cruise Guidance Steering Widget (100% transparent container, crystal clear vector overlay) */
 .map-guidance-widget {
     position: absolute;

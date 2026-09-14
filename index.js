@@ -4899,13 +4899,16 @@ function buildNauticalChartLayer() {
         }
     });
 
-    // 2. S-57 Depth Soundings (SOUNDG: Drobne poševne številke globin)
+    // 2. S-57 Depth Soundings (SOUNDG: Uradne globine v metrih z decimalnimi indeksi)
     NAUTICAL_SOUNDINGS.forEach(snd => {
+        const parts = snd.depth.split('.');
+        const integerPart = parts[0];
+        const subPart = parts.length > 1 ? `<sub>${parts[1]}</sub>` : '';
         const icon = L.divIcon({
             className: 'nautical-sounding-divicon',
-            html: `<div class="nautical-sounding-num">${snd.depth}</div>`,
-            iconSize: [28, 16],
-            iconAnchor: [14, 8]
+            html: `<span class="nautical-sounding-badge">${integerPart}${subPart}</span>`,
+            iconSize: [26, 14],
+            iconAnchor: [13, 7]
         });
         const marker = L.marker([snd.lat, snd.lon], { icon: icon });
         marker.bindPopup(`<b>Globina: ${snd.depth} m</b><br><small>${snd.name}</small>`);
