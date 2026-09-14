@@ -1,0 +1,296 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html"><link rel="import" href="../../bower_components/i18n-msg/i18n-msg.html"><link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html"><link rel="import" href="../../bower_components/polymerfire/firebase-query.html"><link rel="import" href="../bazdara-import/highcharts-import.html"><link rel="import" href="../styles/shared-styles.html"><link rel="import" href="../../bower_components/polymer/polymer.html"><link rel="import" href="../../bower_components/polymer/polymer-mini.html"><link rel="import" href="../../bower_components/polymer/polymer-micro.html"><link rel="import" href="../../bower_components/i18n-msg/i18n-msg.html"><link rel="import" href="../../bower_components/i18n-msg/i18n-msg-behavior.html"><link rel="import" href="../../bower_components/i18n-msg/observer.html"><link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html"><link rel="import" href="../../bower_components/polymerfire/firebase-query.html"><link rel="import" href="../../bower_components/polymerfire/firebase-database-behavior.html"><link rel="import" href="../../bower_components/app-storage/app-storage-behavior.html"><link rel="import" href="../../bower_components/promise-polyfill/promise-polyfill.html"><link rel="import" href="../../bower_components/promise-polyfill/promise-polyfill-lite.html"><link rel="import" href="../../bower_components/polymerfire/firebase-common-behavior.html"><link rel="import" href="../../bower_components/app-storage/app-network-status-behavior.html"><link rel="import" href="../../bower_components/polymerfire/firebase-app-script.html"><link rel="import" href="../../bower_components/polymerfire/firebase-database-script.html"><link rel="import" href="../bazdara-import/highcharts-import.html"><link rel="import" href="../styles/shared-styles.html"><link rel="import" href="../../bower_components/paper-styles/color.html"></head><body><dom-module id="bazdara-page-plimovanje"><template><style include="shared-styles">:host{display:block;}.oglas{text-align:center;width:100%;}@media screen and (min-width: 768px){.advert{margin-right:40px;margin-left:0px;}}</style><iron-media-query query="(max-width: 767px)" query-matches="{{mobile}}"></iron-media-query><firebase-query path="/plimovanje/koper" data="{{data}}" order-by="$key"></firebase-query><div class="container"><h2 class="page-title"><i18n-msg msgid="plimovanje_naslov">Plimovanje morja</i18n-msg></h2><div class="card-deck-wrapper"><div class="card-deck"><div class="card" style="width:100%"><div id="graf_plima" style="width:100%;max-width:1070px;height:400px"></div></div></div></div><div class="card-deck-wrapper"><div class="card-deck"><div class="card"><div class="card-block text-xs-justify"><i18n-msg msgid="plimovanje">Bibavica (plimovanje) v Tržaškem zalivu je najmočnejša na celotnem Jadranu, na kar vpliva predvsem plitvost morja. Plimovanje je posledica privlačnih sil Lune, Sonca ter drugih nebesnih teles, vendar je vpliv Lune daleč najmočnejši. Praviloma se na vsak obhod Lune okoli Zemlje (24 ur 50 min) zvrstita po dvakrat plima in oseka. Najmočnejše plimovanje je takrat, ko delujeta privlačni sili Lune in Sonca v isti smeri, to je ob mlaju in ščipu (polni Luni). Amplituda valovanja je glede na povprečno vrednost visokih in nizkih vod okoli 60 cm, povprečna največja amplituda v Trstu pa znaša 88 cm. Povprečne mesečne višine gladine morja so najvišje od oktobra do decembra, najnižje pa od januarja do marca. Velik vpliv na spremembo nivoja gladine imajo tudi močni vetrovi, ki lahko iz zaliva izrivajo ali pa v zaliv prinašajo večje količine morske vode. Tako največji vodostaji nastopajo običajno ob ciklonih, ki jih spremlja viharni jugo z narivanjem vodne mase proti obalam Tržaškega zaliva.</i18n-msg></div></div></div></div></div><bazdara-donate></bazdara-donate></template><script>
+Polymer({
+  is: 'bazdara-page-plimovanje',
+
+  properties: {
+    loading: {
+      type: Boolean,
+      value: true,
+      notify: true
+    },
+    android: {
+      type: Boolean,
+      value: function value() {
+        //ready
+        return (/Android|iPhone|iPad|iPod|android/i.test(navigator.userAgent) ? true : false
+        );
+      }
+    },
+    plima: {
+      type: Object
+    },
+    data: {
+      type: Object,
+      notify: true,
+      reflectToAttribute: true,
+      observer: 'fireload'
+    }
+  },
+
+  fireload: function fireload() {
+
+    Polymer.RenderStatus.afterNextRender(this, function () {
+      setTimeout(function () {
+        if (this.loading) {
+          //(adsbygoogle = window.adsbygoogle || []).push({});
+        }
+        this.loading = false;
+      }.bind(this), 750);
+    });
+  },
+
+  behaviors: [i18nMsgBehavior],
+
+  genTitle: function genTitle() {
+    if (I18nMsg.lang == 'sl') {
+
+      var title = 'Plimovanje morja severni Jadran';
+      var descr = 'Prognozirano plimovanje morja na severnem Jadranu za naslednjih 7 dni';
+    } else if (I18nMsg.lang == 'en') {
+
+      var title = 'Sea Tides north Adriatic';
+      var descr = 'Prediction of the sea tides on the northern Adriatic for 7 days';
+    } else if (I18nMsg.lang == 'it') {
+
+      var title = 'Previsioni marea Adriatico Settentrionale';
+      var descr = 'Previsione delle maree del mare sull Adriatico settentrionale per 7 giorni';
+    } else if (I18nMsg.lang == 'hr') {
+
+      var title = 'Morske mijene sjeverni Jadran';
+      var descr = 'Predviđanje morskih plima i oseka na sjevernom Jadranu 7 dana';
+    }
+
+    document.title = title + ' | Bazdara';
+    document.querySelector('meta[name="description"]').setAttribute("content", descr);
+  },
+
+  plim: function plim() {
+
+    var d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    prev = Date.parse(d) - 3600000;
+    next = prev + 172800000;
+
+    starter = prev - 86400000;
+    if (screen.width < 770) {
+      ender = prev + 1209600000;
+    } else if (screen.width > 769) {
+      ender = prev + 2592000000;
+    }
+
+    start = starter / 100000;
+    end = ender / 100000;
+    starting = starter - 3600000;
+
+    var request2 = new XMLHttpRequest();
+
+    var request = new XMLHttpRequest();
+
+    request2.open('GET', 'https://bazdara-99a47.firebaseio.com/trenutno/vodostaj.json', true);
+
+    request.open('GET', 'https://bazdara-99a47.firebaseio.com/plimovanje/koper.json?orderBy=%22$key%22&startAt=%22' + start + '%22&endAt=%22' + end + '%22', true);
+
+    request.onload = function () {
+      if (this.status >= 200 && this.status < 400) {
+        // Success!
+        var data = JSON.parse(this.response);
+
+        var mystring = request2.response;
+        mystring = mystring.replace('"', '');
+        mystring = mystring.replace('"', '');
+
+        var field = "h";
+        var datas = [];
+        var datas2 = [];
+
+        Object.keys(data).forEach(function (key) {
+          datas.push(data[key].h + 10);
+        });
+
+        datas2.push(Number(mystring));
+
+        Date.prototype.addHours = function (h) {
+          this.setHours(this.getHours() + h);
+          return this;
+        };
+
+        //console.log(datas);
+
+        // Create a timer
+        var start = +new Date();
+
+        // Create the chart
+        var chart = new Highcharts.StockChart({
+          chart: {
+            zoomType: 'x',
+            renderTo: 'graf_plima',
+            type: 'spline',
+            style: {
+              fontFamily: 'Roboto, sans-serif'
+            },
+            events: {
+              load: function load(event) {
+                var chart = this;
+                //setTimeout(function() {
+                chart.xAxis[0].setExtremes(prev, next);
+                //}, 1);
+              }
+            }
+          },
+
+          rangeSelector: {
+
+            buttons: [{
+              type: '',
+              count: 1,
+              text: '48h'
+            }],
+            selected: 0
+          },
+
+          credits: {
+            enabled: false
+          },
+
+          exporting: {
+            enabled: true
+          },
+
+          yAxis: {
+            title: null,
+            max: 90,
+            min: -90,
+            tickInterval: 1.0,
+            plotLines: [{
+              color: '#62a8ea',
+              width: 1,
+              value: 60,
+              dashStyle: 'solid',
+              label: {
+                text: document.querySelector('i18n-msg').getMsg('Plima'),
+                style: {
+                  fontSize: '12px'
+                }
+              },
+              zIndex: 5
+            }, {
+              color: '#46BE8A',
+              width: 1,
+              value: -60,
+              dashStyle: 'solid',
+              label: {
+                text: document.querySelector('i18n-msg').getMsg('Oseka'),
+                style: {
+                  fontSize: '12px'
+                }
+              },
+              zIndex: 5
+            }]
+          },
+
+          xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+              day: '%e %b',
+              week: '%e %b %y',
+              month: '%b %y',
+              year: '%Y'
+            },
+            events: {
+              afterSetExtremes: function afterSetExtremes(e) {
+                if (e.trigger == "rangeSelectorButton" && e.rangeSelectorButton.text == "48h") {
+
+                  // it is your button that caused this,
+                  // so setExtrememes to your custom
+                  // have to do in timeout to let
+                  // highcharts finish processing events...
+                  setTimeout(function () {
+                    var chart = this;
+                    chart.xAxis[0].setExtremes(prev, next);
+                  }, 1);
+                }
+              }
+            },
+            plotLines: [{
+              value: new Date().addHours(2),
+              color: '#F44336',
+              width: 1,
+              zIndex: 10,
+              dashStyle: 'dotted'
+            }]
+
+          },
+
+          title: null,
+
+          series: [{
+            name: document.querySelector('i18n-msg').getMsg('Visina'),
+            type: 'areaspline',
+            id: 'dataseries',
+            fillColor: {
+              linearGradient: {
+                x1: 0,
+                y1: 0,
+                x2: 0,
+                y2: 1
+              },
+              stops: [[0, Highcharts.getOptions().colors[0]], [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]]
+            },
+            data: datas,
+            pointStart: starting,
+            pointInterval: 1800000,
+            tooltip: {
+              valueDecimals: 1,
+              valueSuffix: 'cm'
+            }
+          }, {
+            type: 'scatter',
+            name: 'Koper',
+            pointStart: new Date().getTime() + 120 * 60 * 1000,
+            data: datas2,
+            marker: {
+              radius: 5
+            },
+            tooltip: {
+              pointFormatter: function pointFormatter() {
+                var point = this;
+                return 'Zdaj: <b>' + point.y + '</b> cm' + '<br/> Trenutna vrednost iz<br>mareografske postaje Koper';
+              }
+            }
+
+          }]
+
+        });
+      } else {
+
+        setTimeout(function () {
+          this.plim();
+        }.bind(this), 30 * 1000);
+      }
+    };
+
+    request.onerror = function () {
+      setTimeout(function () {
+        this.plim();
+      }.bind(this), 30 * 1000);
+    }.bind(this);
+
+    request2.send();
+    request.send();
+  },
+
+  ready: function ready() {
+    this.loading = true;
+    this.fire('app-shell-loaded');
+
+    var self = this;
+    self.genTitle();
+
+    this.plim();
+
+    setInterval(function () {
+      this.plim();
+    }.bind(this), 5 * 60 * 1000);
+  }
+
+});</script></dom-module></body></html>

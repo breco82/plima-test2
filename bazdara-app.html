@@ -1,0 +1,200 @@
+<html><head><script>
+// Create namespace for app behaviors
+window.AppBehaviors = window.AppBehaviors || {};</script><link rel="import" href="../../bower_components/polymer/polymer.html"><link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html"><link rel="import" href="../../bower_components/app-route/app-location.html"><link rel="import" href="../../bower_components/app-route/app-route.html"><link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html"><link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html"><link rel="import" href="../../bower_components/app-layout/app-header/app-header.html"><link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html"><link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html"><link rel="import" href="../../bower_components/app-layout/app-scrollpos-control/app-scrollpos-control.html"><link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html"><link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html"><link rel="import" href="../../bower_components/iron-pages/iron-pages.html"><link rel="import" href="../../bower_components/iron-selector/iron-selector.html"><link rel="import" href="../../bower_components/iron-icon/iron-icon.html"><link rel="import" href="../../bower_components/paper-styles/color.html"><link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html"><link rel="import" href="../../bower_components/i18n-msg/i18n-msg.html"><link rel="import" href="../../bower_components/font-roboto/roboto.html"><link rel="import" href="../bazdara-import/font-import.html"><link rel="import" href="../app-icons/app-icons.html"><link rel="import" href="../styles/shared-styles.html"><link rel="import" href="../../bower_components/polymerfire/firebase.html"><link rel="import" href="../../bower_components/polymerfire/firebase-app.html"><link rel="import" href="../../bower_components/geo-location/geo-location.html"><link rel="import" href="../../bower_components/neon-animation/neon-animated-pages.html"><link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html"><link rel="import" href="../../bower_components/neon-animation/animations/fade-in-animation.html"><link rel="import" href="../../bower_components/polymer/polymer.html"><link rel="import" href="../../bower_components/polymer/polymer-mini.html"><link rel="import" href="../../bower_components/polymer/polymer-micro.html"><link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html"><link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html"><link rel="import" href="../../bower_components/paper-styles/color.html"><link rel="import" href="../../bower_components/paper-spinner/paper-spinner-behavior.html"><link rel="import" href="../../bower_components/paper-spinner/paper-spinner-styles.html"><link rel="import" href="../../bower_components/app-route/app-location.html"><link rel="import" href="../../bower_components/iron-location/iron-location.html"><link rel="import" href="../../bower_components/iron-location/iron-query-params.html"><link rel="import" href="../../bower_components/app-route/app-route-converter-behavior.html"><link rel="import" href="../../bower_components/app-route/app-route.html"><link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html"><link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html"><link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html"><link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html"><link rel="import" href="../../bower_components/app-layout/app-header/app-header.html"><link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects-behavior.html"><link rel="import" href="../../bower_components/iron-scroll-target-behavior/iron-scroll-target-behavior.html"><link rel="import" href="../../bower_components/app-layout/helpers/helpers.html"><link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html"><link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html"><link rel="import" href="../../bower_components/app-layout/app-scroll-effects/effects/blend-background.html"><link rel="import" href="../../bower_components/app-layout/app-scroll-effects/effects/fade-background.html"><link rel="import" href="../../bower_components/app-layout/app-scroll-effects/effects/material.html"><link rel="import" href="../../bower_components/app-layout/app-scroll-effects/effects/waterfall.html"><link rel="import" href="../../bower_components/app-layout/app-scroll-effects/effects/resize-title.html"><link rel="import" href="../../bower_components/app-layout/app-scroll-effects/effects/parallax-background.html"><link rel="import" href="../../bower_components/app-layout/app-scroll-effects/effects/resize-snapped-title.html"><link rel="import" href="../../bower_components/app-layout/app-scrollpos-control/app-scrollpos-control.html"><link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html"><link rel="import" href="../../bower_components/iron-pages/iron-pages.html"><link rel="import" href="../../bower_components/iron-selector/iron-selectable.html"><link rel="import" href="../../bower_components/iron-selector/iron-selection.html"><link rel="import" href="../../bower_components/iron-selector/iron-selector.html"><link rel="import" href="../../bower_components/iron-selector/iron-multi-selectable.html"><link rel="import" href="../../bower_components/iron-icon/iron-icon.html"><link rel="import" href="../../bower_components/iron-meta/iron-meta.html"><link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html"><link rel="import" href="../../bower_components/paper-behaviors/paper-inky-focus-behavior.html"><link rel="import" href="../../bower_components/iron-behaviors/iron-button-state.html"><link rel="import" href="../../bower_components/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html"><link rel="import" href="../../bower_components/iron-behaviors/iron-control-state.html"><link rel="import" href="../../bower_components/paper-behaviors/paper-ripple-behavior.html"><link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html"><link rel="import" href="../../bower_components/paper-styles/default-theme.html"><link rel="import" href="../../bower_components/i18n-msg/i18n-msg.html"><link rel="import" href="../../bower_components/i18n-msg/i18n-msg-behavior.html"><link rel="import" href="../../bower_components/i18n-msg/observer.html"><link rel="import" href="../../bower_components/font-roboto/roboto.html"><link rel="import" href="../bazdara-import/font-import.html"><link rel="import" href="../app-icons/app-icons.html"><link rel="import" href="../../bower_components/iron-iconset-svg/iron-iconset-svg.html"><link rel="import" href="../styles/shared-styles.html"><link rel="import" href="../../bower_components/polymerfire/firebase.html"><link rel="import" href="../../bower_components/polymerfire/firebase-app-script.html"><link rel="import" href="../../bower_components/polymerfire/firebase-auth-script.html"><link rel="import" href="../../bower_components/polymerfire/firebase-database-script.html"><link rel="import" href="../../bower_components/polymerfire/firebase-messaging-script.html"><link rel="import" href="../../bower_components/polymerfire/firebase-storage-script.html"><link rel="import" href="../../bower_components/polymerfire/firebase-app.html"><link rel="import" href="../../bower_components/geo-location/geo-location.html"><link rel="import" href="../../bower_components/neon-animation/neon-animated-pages.html"><link rel="import" href="../../bower_components/neon-animation/neon-animation-runner-behavior.html"><link rel="import" href="../../bower_components/neon-animation/neon-animatable-behavior.html"><link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html"><link rel="import" href="../../bower_components/neon-animation/neon-animation-behavior.html"><link rel="import" href="../../bower_components/neon-animation/web-animations.html"><link rel="import" href="../../bower_components/neon-animation/animations/fade-in-animation.html"></head><body><dom-module id="bazdara-app"><template><style include="shared-styles">:host{--app-primary-color:#fff;--app-secondary-color:var(--paper-blue-600);-webkit-tap-highlight-color:rgba(0, 0, 0, 0);display:block;font-family:'Roboto', sans-serif;background-color:var(--paper-grey-100);}body{background-color:#f5f5f5;}.overlay{position:fixed;top:0;height:100%;width:100%;display:-webkit-box;display:-moz-box;display:-ms-flexbox;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-flex-align:center;-ms-flex-align:center;-webkit-align-items:center;align-items:center;flex-direction:column;justify-content:center;background:#f5f5f5;z-index:1001;}@media (min-width: 1440px){.overlay{left:310px;}}a{text-decoration:none;color:inherit;font-size:inherit;}.app-header-layout-0{z-index:1002;}.app-drawer-0[opened] #scrim.app-drawer{z-index:1003;}#drawer{z-index:1004;}app-drawer{--app-drawer-width:310px;--app-drawer-content-container:{background-color:var(--app-primary-color);overflow-x:hidden;border-right:1px solid #ddd;};}app-drawer app-header{background-color:var(--app-primary-color);}iron-selector{background-color:var(--app-primary-color);color:#fff;}iron-selector a{display:block;padding:10px 20px;font-size:14px;color:var(--paper-grey-800);}@media (min-width: 768px){iron-selector a{padding:12px 16px;font-size:16px;}}iron-selector a.iron-selected{background-color:var(--paper-blue-400);color:#fff;}neon-animated-pages a{color:var(--paper-grey-800);}neon-animated-pages *{min-height:100%;}.main-header{background-color:var(--app-secondary-color);color:#fff;}bazdara-push{margin-top:auto;}h1{font-size:2.0em;font-weight:300;text-align:center;margin-top:10px;margin-bottom:.5rem;}@media (min-width: 360px){h1{font-size:2.5em;margin-top:12px;}}@media (min-width: 400px){h1{font-size:3em;margin-top:10px;}}h4{font-weight:300;margin-left:20px;font-size:2em;}paper-spinner{width:96px;height:96px;position:relative;--paper-spinner-stroke-width:8px;}.icona{margin-left:5px;margin-right:13px;}@media (max-width: 1438px){paper-spinner{margin-left:auto;margin-right:auto;}}@media (min-width: 1439px){h1{margin-right:-40px;}paper-spinner{margin-left:-310px;}}.jezik_outer{width:40px;height:40px;position:relative;border-radius:20px;}#jezik{display:inline-block;padding:8px;outline:none;-webkit-tap-highlight-color:rgba(0, 0, 0, 0);-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;z-index:0;line-height:1;width:40px;height:40px;box-sizing:border-box !important;background:transparent;border:0px;-webkit-appearance:none;-moz-appearance:none;appearance:none;color:#fff;font-size:18px;}select::-ms-expand{display:none;}#jezik *{background-color:#1e88e5;}option{padding:10px;}</style><div class="overlay" hidden$="[[!isLoading]]"><paper-spinner active$="[[isLoading]]"></paper-spinner></div><firebase-app name="bazdara" api-key="AIzaSyD2PAdzxrpNtJWqKGUm2RW441euKOT6p6Y" auth-domain="bazdara-99a47.firebaseapp.com" database-url="https://bazdara-99a47.firebaseio.com" messaging-sender-id="544509936614" storage-bucket="bazdara-99a47.appspot.com"></firebase-app><geo-location latitude="{{lat}}" longitude="{{lng}}"></geo-location><app-location route="{{route}}"></app-location><app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route><app-scrollpos-control selected="{{routeData.page}}"></app-scrollpos-control><app-drawer-layout fullbleed="" drawer-width="310px" responsive-width="1439px"><app-drawer id="drawer"><app-header-layout has-scrolling-region="" style="height:100%;"><app-header fixed="" style="height:224px"><bazdara-spletna lat="[[lat]]" lng="[[lng]]"></bazdara-spletna></app-header><iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation"><a name="trenutno" href="/"><i class="icona bazdara-compass"></i><i18n-msg msgid="menu_2">Trenutne razmere</i18n-msg></a><a name="napoved" href="/napoved"><i class="icona bazdara-sun-inv"></i><i18n-msg msgid="menu_3">Vremenska napoved</i18n-msg></a><a name="plimovanje" href="/plimovanje"><i class="icona bazdara-plima"></i><i18n-msg msgid="menu_4">Plimovanje morja</i18n-msg></a><a name="navigacija" href="/navigacija"><i class="icona bazdara-ship"></i><i18n-msg msgid="menu_7">Kartografija</i18n-msg>&nbsp;/&nbsp;<i18n-msg msgid="Napovedi">Napovedi</i18n-msg></a><a name="statistika" href="/statistika"><i class="icona bazdara-chart-line"></i><i18n-msg msgid="menu_9">Statistika</i18n-msg></a><a name="informacije" href="/informacije"><i class="icona bazdara-info"></i><i18n-msg msgid="menu_8">Informacije</i18n-msg></a></iron-selector><bazdara-push></bazdara-push></app-header-layout></app-drawer><app-header-layout><app-header reveals="" effects="waterfall" class="main-header"><app-toolbar><paper-icon-button icon="app:menu" drawer-toggle="" on-tap="cameraimport" onclick="ga('send', 'event', 'Menu', 'Click');"></paper-icon-button><h1 title="">Bazdara</h1><div class="jezik_outer"><select id="jezik"><option value="sl">SL</option><option value="en">EN</option><option value="it">IT</option><option value="hr">HR</option></select><paper-ripple recenters=""></paper-ripple></div></app-toolbar></app-header></app-header-layout><neon-animated-pages selected="[[page]]" attr-for-selected="name" fallback-selection="404" role="main" entry-animation="fade-in-animation" exit-animation="fade-out-animation"><bazdara-page-trenutno name="trenutno" loading="{{isLoading}}"></bazdara-page-trenutno><bazdara-page-napoved name="napoved" loading="{{isLoading}}"></bazdara-page-napoved><bazdara-page-padavine name="padavine" loading="{{isLoading}}"></bazdara-page-padavine><bazdara-page-veter name="veter" loading="{{isLoading}}"></bazdara-page-veter><bazdara-page-plimovanje name="plimovanje" loading="{{isLoading}}"></bazdara-page-plimovanje><bazdara-page-navigacija name="navigacija" loading="{{isLoading}}"></bazdara-page-navigacija><bazdara-page-statistika name="statistika" loading="{{isLoading}}"></bazdara-page-statistika><bazdara-page-informacije name="informacije" loading="{{isLoading}}"></bazdara-page-informacije><bazdara-page-404 name="404"></bazdara-page-404></neon-animated-pages></app-drawer-layout><bazdara-service-worker></bazdara-service-worker></template><script>
+Polymer({
+  is: 'bazdara-app',
+
+  properties: {
+
+    _zdaj: {
+      type: String,
+      reflectToAttribute: true
+    },
+
+    page: {
+      type: String,
+      reflectToAttribute: true,
+      observer: '_pageChanged'
+    },
+    subroute: {
+      type: String,
+      reflectToAttribute: true
+    },
+    isLoading: {
+      type: Boolean,
+      value: true,
+      notify: true
+    }
+
+  },
+
+  listeners: {
+    'app-shell-loaded': '_onAppShellLoaded'
+  },
+
+  _onAppShellLoaded: function _onAppShellLoaded() {
+    // Load lazy resources after render.
+    Polymer.RenderStatus.afterNextRender(this, function () {
+      this.importHref(this.resolveUrl('../bazdara-elements/bazdara-lazy-resources.html'), function () {
+        this.importHref(this.resolveUrl('../bazdara-elements/bazdara-service-worker.html'), function () {});
+
+        if (screen.width > 1438) {
+          this.cameraimport();
+        }
+
+        window.addEventListener("resize", function (event) {
+          if (screen.width > 1438) {
+            this.cameraimport();
+          }
+        }.bind(this));
+      });
+    });
+  },
+
+  cameraimport: function cameraimport() {
+    Polymer.RenderStatus.afterNextRender(this, function () {
+      this.importHref(this.resolveUrl('../bazdara-elements/bazdara-spletna.html'), function () {});
+    });
+  },
+
+  observers: ['_routePageChanged(routeData.page)', '_lockScroll(isLoading)'],
+
+  _lockScroll: function _lockScroll(isLoading) {
+    if (isLoading) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'visible';
+    }
+  },
+
+  _routePageChanged: function _routePageChanged(page) {
+    this.page = page || 'trenutno';
+
+    if (!this.$.drawer.persistent) {
+      this.$.drawer.close();
+    }
+  },
+
+  _pageChanged: function _pageChanged(page) {
+    // load page import on demand.
+    //this.isLoading = true;
+    var resolvedPageUrl = this.resolveUrl('../bazdara-page/bazdara-page-' + page + '.html');
+    this.importHref(resolvedPageUrl, null, this._showPage404, true);
+    ga('send', 'pageview', '/' + page);
+  },
+
+  _showPage404: function _showPage404() {
+    var resolvedPageUrl = this.resolveUrl('../bazdara-page/bazdara-page-404.html');
+    this.importHref(resolvedPageUrl, null, this._showPage404, true);
+    this.page = '404';
+  },
+
+  attached: function attached() {
+
+    var config = {
+      storageBucket: "bazdara-99a47.appspot.com"
+    };
+    firebase.initializeApp(config);
+
+    //ready
+    if (navigator && navigator.splashscreen) navigator.splashscreen.hide();
+
+    var jezik = document.querySelector('#jezik');
+
+    //this.querySelector('#menu').select(selectedVal);
+
+    // Event is only needed when running under the HTMLImports polyfill.
+    var url = window.location.search;
+
+    if (url.match("english")) {
+      document.documentElement.lang = 'en';
+      ga('send', 'event', 'jezik', 'en');
+      I18nMsg.lang = 'en';
+      setCookie('jezik', I18nMsg.lang, '365');
+    } else if (url.match("italiano")) {
+      document.documentElement.lang = 'it';
+      I18nMsg.lang = 'it';
+      ga('send', 'event', 'jezik', 'it');
+      setCookie('jezik', I18nMsg.lang, '365');
+    } else if (url.match("hrvatski")) {
+      document.documentElement.lang = 'hr';
+      I18nMsg.lang = 'hr';
+      ga('send', 'event', 'jezik', 'hr');
+      setCookie('jezik', I18nMsg.lang, '365');
+    } else if (url.match("slovenscina")) {
+      document.documentElement.lang = 'sl';
+      I18nMsg.lang = 'sl';
+      ga('send', 'event', 'jezik', 'sl');
+      setCookie('jezik', I18nMsg.lang, '365');
+    } else {
+      I18nMsg.lang = getCookie('jezik') || document.documentElement.lang || 'sl';
+      setCookie('jezik', I18nMsg.lang, '365');
+    }
+
+    document.getElementById("jezik").value = I18nMsg.lang;
+    document.documentElement.lang = I18nMsg.lang;
+    Platform.performMicrotaskCheckpoint();
+
+    jezik.addEventListener('change', function () {
+      document.documentElement.lang = this.value;
+      setCookie('jezik', this.value, '365');
+      I18nMsg.lang = this.value;
+      ga('send', 'event', 'jezik', this.value);
+      Platform.performMicrotaskCheckpoint();
+    });
+  }
+  //created: function() {
+  // created
+  //},
+  //attached: function() {
+  //this._activateToolBarButtons();
+  //},
+  //detached: function() {
+  //this._deactivateToolBarButtons();
+  //}
+
+});
+
+//if (window.chrome && window.chrome.loadTimes) {
+//  var load = window.chrome.loadTimes();
+//  var fp = Math.round((load.firstPaintTime - load.startLoadTime) * 1000);
+//  if (fp) {
+//    ga('send', 'timing', 'load', 'firstpaint', fp);
+//  }
+//};
+
+// Send errors to Google Analytics
+//window.onerror = (msg, file, line, column, error = null) => {
+//  try {
+//    if (error) msg = error.stack;
+//    ga('send', 'event', 'error', '${file}:${line}', msg);
+//  } catch (e) {
+//    // Do nothing
+//  }
+//}
+
+setInterval(function () {
+  ga('send', 'event', 'hartbeat', 'hartbeat');
+}, 4 * 60 * 1000);
+
+function setCookie(cname, cvalue, exdays) {
+  var d = new Date();
+  d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+  var expires = "expires=" + d.toUTCString();
+  document.cookie = cname + "=" + cvalue + "; " + expires;
+};
+
+function getCookie(cname) {
+  var name = cname + "=";
+  var ca = document.cookie.split(';');
+  for (var i = 0; i < ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+};</script></dom-module></body></html>

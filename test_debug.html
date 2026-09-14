@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <title>Model Test Debugger</title>
+    <style>
+        body { font-family: monospace; background: #0f172a; color: #cbd5e1; padding: 20px; font-size: 14px; }
+        h1 { color: #f8fafc; font-size: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .success { color: #10b981; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+        pre { background: #1e293b; padding: 15px; border-radius: 6px; border: 1px solid #334155; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Tidal Model Debugger</h1>
+    <p>This page tests the physical tide model calculations inside your browser.</p>
+    
+    <h2>Results:</h2>
+    <pre id="output">Loading and calculating...</pre>
+
+    <script src="Arcots.js"></script>
+    <script src="TideCalculator.js"></script>
+    <script>
+        (async function() {
+            const out = document.getElementById('output');
+            try {
+                // Fetch the latest ARSO data via proxy
+                const res = await fetch('/api/data?period=1');
+                if (!res.ok) throw new Error("API call failed: " + res.statusText);
+                const data = await res.json();
+                if (data.length === 0) throw new Error("API returned no data");
+                
+                // Helper to parse date
+                function parseArsoDate(dateStr) {
+                    const parts = dateStr.split(' ');
+                    if (parts.length < 2) return new Date();
+                    const dParts = parts[0].split('.');
+                    const tParts = parts[1].split(':');
+                    return new Date(dParts[2], dParts[1] - 1, dParts[0], tParts[0], tParts[1], 0);
+                }
+
+                // Sort ascending
+                const actualData = data.map(item => ({
+                    time: parseArsoDate(item.time),
+                    temp: item.temp,
+                    level: item.level
+                })).sort((a, b) => a.time - b.time);
+
+                const latest = actualData[actualData.length - 1];
+                const latestTime = latest.time;
+
+                let debugText = "SYSTEM TIME: " + new Date().toString() + "\n";
+                debugText += "LATEST ARSO MEASUREMENT TIME (parsed): " + latestTime.toString() + "\n";
+                debugText += "LATEST ARSO ABS LEVEL: " + latest.level + " cm\n\n";
+
+                // Generate predictions
+                const start = new Date(latestTime.getTime());
+                const end = new Date(latestTime.getTime() + (36 * 60 * 60 * 1000));
+                const predictions = TideCalculator.getPredictionsForPeriod(start, end, 5);
+
+                debugText += "PREDICTIONS GENERATED: " + predictions.length + " points\n";
+                debugText += "First point: " + predictions[0].time.toString() + " -> " + predictions[0].level + " cm\n";
+                debugText += "Last point: " + predictions[predictions.length - 1].time.toString() + " -> " + predictions[predictions.length - 1].level + " cm\n\n";
+
+                let nextHigh = null;
+                let nextLow = null;
+
+                for (let i = 1; i < predictions.length - 1; i++) {
+                    const prev = predictions[i-1].level;
+                    const curr = predictions[i].level;
+                    const next = predictions[i+1].level;
+
+                    if (curr > prev && curr > next) {
+                        if (!nextHigh && predictions[i].time > latestTime) {
+                            nextHigh = predictions[i];
+                        }
+                    }
+                    if (curr < prev && curr < next) {
+                        if (!nextLow && predictions[i].time > latestTime) {
+                            nextLow = predictions[i];
+                        }
+                    }
+                }
+
+                if (nextHigh) {
+                    debugText += "<span class='success'>[OK] Next High Tide found:</span>\n";
+                    debugText += "     Time: " + nextHigh.time.toString() + "\n";
+                    debugText += "     Level (relative): " + nextHigh.level + " cm\n";
+                    debugText += "     Level (absolute): " + Math.round(nextHigh.level + 217.0) + " cm\n\n";
+                } else {
+                    debugText += "<span class='error'>[ERROR] Next High Tide NOT found!</span>\n\n";
+                }
+
+                if (nextLow) {
+                    debugText += "<span class='success'>[OK] Next Low Tide found:</span>\n";
+                    debugText += "     Time: " + nextLow.time.toString() + "\n";
+                    debugText += "     Level (relative): " + nextLow.level + " cm\n";
+                    debugText += "     Level (absolute): " + Math.round(nextLow.level + 217.0) + " cm\n\n";
+                } else {
+                    debugText += "<span class='error'>[ERROR] Next Low Tide NOT found!</span>\n\n";
+                }
+
+                // Dump predictions around tonight's low tide (21:30 to 22:45)
+                debugText += "--- DUMP: TONIGHT 21:30 - 22:45 ---\n";
+                predictions.forEach(p => {
+                    const h = p.time.getHours();
+                    const m = p.time.getMinutes();
+                    const d = p.time.getDate();
+                    if (d === latestTime.getDate() && h === 22 || (h === 21 && m >= 30)) {
+                        debugText += p.time.toLocaleTimeString() + " -> " + p.level + " cm\n";
+                    }
+                });
+                debugText += "\n";
+
+                // Dump predictions around tomorrow's high tide (02:30 to 03:45)
+                debugText += "--- DUMP: TOMORROW 02:30 - 03:45 ---\n";
+                predictions.forEach(p => {
+                    const h = p.time.getHours();
+                    const m = p.time.getMinutes();
+                    const d = p.time.getDate();
+                    if (d !== latestTime.getDate() && (h === 3 || (h === 2 && m >= 30))) {
+                        debugText += p.time.toLocaleTimeString() + " -> " + p.level + " cm\n";
+                    }
+                });
+
+                out.innerHTML = debugText;
+
+            } catch (err) {
+                out.innerHTML = "<span class='error'>JavaScript Error: " + err.message + "</span>\n" + err.stack;
+            }
+        })();
+    </script>
+</body>
+</html>

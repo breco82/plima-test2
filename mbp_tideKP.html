@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="sl">
+
+<head>
+    <meta charset="utf-8">
+    <title>Plimovanje</title>
+    <meta name="robots" content="nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <link rel="manifest" href="manifest.json"> -->
+    <link href="css/c3.css" rel="stylesheet">
+    <link href="css/tideKP.css" rel="stylesheet">
+    <script src="js/Arcots.js"></script>
+    <script src="js/TideKP.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="js/c3.min.js"></script>
+    <!-- <script src="js/swipe1.js"></script> -->
+</head>
+
+<body onload="getInitialTidalChart()">
+    <p id="currtxt"></p>
+    <div id="chart">
+    </div>
+    <div class="tidal-buttons">
+        <div class="inner">
+            <label for="choosedate">Izberi datum:</label>
+            <input type="date" id="choosedate" name="choosedate" onchange="getChoosenTidalChart()">
+        </div>
+        <input class="inner" name="prevtDayButton" type="button" value="<" onclick="getPrevTidalChart()" />
+        <input class="inner" name="nextDayButton" type="button" value=">" onclick="getNextTidalChart()" />
+        <input class="inner" name="todayButton" type="button" value="Danes" onclick="getInitialTidalChart()" />
+    </div>
+ <!--   <script>
+        let touchstartX = 0;
+        let touchstartY = 0;
+        let touchendX = 0;
+        let touchendY = 0;
+
+        const gestureZone = document.getElementById('chart');
+
+        gestureZone.addEventListener('touchstart', function (event) {
+            touchstartX = event.changedTouches[0].screenX;
+            touchstartY = event.changedTouches[0].screenY;
+        }, false);
+
+        gestureZone.addEventListener('touchend', function (event) {
+            touchendX = event.changedTouches[0].screenX;
+            touchendY = event.changedTouches[0].screenY;
+            handleGesture();
+        }, false);
+
+        function handleGesture() {
+            var eps = 100;
+            if (touchendX < touchstartX) {
+                if ((touchstartX - touchendX) > eps) {
+                    // alert('Swiped left');
+                    getNextTidalChart();
+
+                }
+            }
+
+            if (touchendX > touchstartX) {
+                if ((touchendX - touchstartX) > eps) {
+                    // alert('Swiped left');
+                    getPrevTidalChart();
+
+                }
+            }
+
+            if (touchendY < touchstartY) {
+                // alert('Swiped up');
+            }
+
+            if (touchendY > touchstartY) {
+                // alert('Swiped down');
+            }
+
+            if (touchendY === touchstartY) {
+                // alert('Tap');
+            }
+        }
+    </script> -->
+</body>
+
+</html>

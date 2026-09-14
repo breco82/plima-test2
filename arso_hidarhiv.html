@@ -1,0 +1,1057 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>
+  Arhivski podatki
+</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
+     <link rel="stylesheet" type="text/css" href="https://www.arso.gov.si/stil/portali.css" />
+
+ <link rel="stylesheet" type="text/css" href="https://www.arso.gov.si/stil/ogrodje.css" />
+  <link rel="stylesheet" type="text/css" href="https://www.arso.gov.si/stil/stran.css" />
+  <link rel="stylesheet" type="text/css" href="https://www.arso.gov.si/stil/zacetna.css" />
+  <link rel="icon" type="image/gif" href="https://www.arso.gov.si/stil/znak.gif" />
+  <script type="text/javascript" src="js/js_lib.js"></script>
+<!--  <script type="text/javascript" src="js/jquery-1.2.6.js"></script>
+-->
+  <script type="text/javascript" src="js/jquery-3.7.1.js"></script>
+  <script type="text/javascript" src="js/jquery-migrate-1.4.1.js"></script>
+  <script type="text/javascript" src="js/jquery-migrate-3.5.0.js"></script>
+  <script type="text/javascript" src="js/dataTables-1.6/media/js/jquery.dataTables.js"></script>
+  <script type="text/javascript" src="js/jquery.skiyotabs.js"></script>
+<!-- Include Lightbox (Production) 
+-->
+	<script type="text/javascript" src="js/jquery_lightbox/js/jquery.lightbox.js"></script>
+
+		<script type="text/javascript">
+		   jQuery(function(){
+			$.Lightbox.construct({
+				show_linkback:	false,
+				show_helper_text: true,
+				text: {
+					image: 'Slika',
+					close: 'Zapri',
+					closeInfo: 'Zapri',
+					help: {close: 'Zapri', interact: 'Zapri sliko...'}
+				      }
+			});
+		   });
+		</script>
+        <link rel="stylesheet" href="js/jquery_lightbox/css/jquery.lightbox.css" type="text/css" media="screen" />
+
+
+</head>
+<body  style="margin:auto;">
+ <DIV align=center>
+     <table class="glavna">
+          <tr>
+            <td class="pasica">
+              <a href="https://www.arso.gov.si/">
+                  <IMG SRC = "https://www.arso.gov.si/stil/prozorna.gif" height="50" width="500" border="0">
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class="zelena">Arhiv hidrolo&#353;kih podatkov - dnevni podatki</td>
+          </tr>
+      </table>
+  </DIV>
+  <!-- meni z -->
+  
+  <!-- meni 1 -->
+  <table id="meni1">
+    <tr>
+      <td class="domov" >
+        <a href="/">&nbsp;</a>
+      </td>
+      <td  class="izbran" > <a href="pov_arhiv_tab.php">Površinske vode</a></td>
+      <td  class="child3" > <a href="pod_arhiv_tab.php">Podzemne vode</a></td>
+      <td class="child4"></td>
+      <td class="child5"></td>
+      <td class="child6"></td>
+      <td class="child7"></td>
+      <td class="child8"></td>
+    </tr>
+  </table>
+  <!-- /meni 1 -->
+  <table class="sirina_strani">
+    <tr>
+      <td>
+        <table class="vsebina">
+          <tr class="lokacija">
+            <td colspan="2">
+              <div id="lokacija"><a href="//www.arso.gov.si/">ARSO</a> &gt; <a href="index.php">Arhiv</a> &gt; <a href="pov_arhiv_tab.php">Površinske vode - dnevne vrednosti</a></div>
+            </td>
+          </tr>
+          <tr>
+            <td class="vsebina">
+              	<style type="text/css" title="currentStyle">
+	   @import "stil/c-css.php";
+
+                table.display {
+		  border:thin solid red;
+                }
+                table.display thead th {
+		  border:thin solid red;
+                }
+                table.display tbody th {
+		  border:thin solid red;
+                }
+                #dol {
+		  border-bottom:thin solid red;
+                }
+                #desno {
+		  border-right:thin solid red;
+                }
+                #dol_desno {
+		  border-bottom:thin solid red;
+		  border-right:thin solid red;
+                }
+                table.display tfoot th {
+		  border:thin solid red;
+                }
+
+	</style>
+	
+
+<h1>Arhiv površinskih voda</h1>
+
+<form method="GET" action="pov_arhiv_tab.php">
+  <p>Vodotok: 
+     <select size="1" name="p_vodotok" onChange="javascript:reload_vodotok(this)">
+                     <option               value="Bača">Bača
+         </option>
+                <option               value="Badaševica">Badaševica
+         </option>
+                <option               value="Bečovnica">Bečovnica
+         </option>
+                <option               value="Bela">Bela
+         </option>
+                <option               value="Belica">Belica
+         </option>
+                <option               value="Belška Voda">Belška Voda
+         </option>
+                <option               value="Bilpa">Bilpa
+         </option>
+                <option               value="Bistra">Bistra
+         </option>
+                <option               value="Bistrica">Bistrica
+         </option>
+                <option               value="Blejsko jezero">Blejsko jezero
+         </option>
+                <option               value="Bloščica">Bloščica
+         </option>
+                <option               value="Bohinjsko jezero">Bohinjsko jezero
+         </option>
+                <option               value="Bolska">Bolska
+         </option>
+                <option               value="Borovniščica">Borovniščica
+         </option>
+                <option               value="Branica">Branica
+         </option>
+                <option               value="Brebovščica">Brebovščica
+         </option>
+                <option               value="Brezniški potok">Brezniški potok
+         </option>
+                <option               value="Ceglarjev potok">Ceglarjev potok
+         </option>
+                <option               value="Cerknica">Cerknica
+         </option>
+                <option               value="Cerkniščica">Cerkniščica
+         </option>
+                <option               value="Cvetkovski potok">Cvetkovski potok
+         </option>
+                <option               value="Čabranka">Čabranka
+         </option>
+                <option               value="Črmenica">Črmenica
+         </option>
+                <option               value="Črna Mlaka">Črna Mlaka
+         </option>
+                <option               value="Črnec">Črnec
+         </option>
+                <option               value="Črni potok">Črni potok
+         </option>
+                <option               value="Devina">Devina
+         </option>
+                <option               value="Divje jezero">Divje jezero
+         </option>
+                <option               value="Dragonja">Dragonja
+         </option>
+                <option               value="Drava">Drava
+         </option>
+                <option               value="Drava kanal HE Formin">Drava kanal HE Formin
+         </option>
+                <option               value="Dravinja">Dravinja
+         </option>
+                <option               value="Dreta">Dreta
+         </option>
+                <option               value="Drnica">Drnica
+         </option>
+                <option               value="Drobtinka">Drobtinka
+         </option>
+                <option               value="Drvanja">Drvanja
+         </option>
+                <option               value="Framski potok">Framski potok
+         </option>
+                <option               value="Galetovi Izviri">Galetovi Izviri
+         </option>
+                <option               value="Gameljščica">Gameljščica
+         </option>
+                <option               value="Glinščica">Glinščica
+         </option>
+                <option               value="Globočec">Globočec
+         </option>
+                <option               value="Globovnica">Globovnica
+         </option>
+                <option               value="Goriški potok">Goriški potok
+         </option>
+                <option               value="Gračnica">Gračnica
+         </option>
+                <option               value="Gradaščica">Gradaščica
+         </option>
+                <option               value="Grahovščica">Grahovščica
+         </option>
+                <option               value="Grajena">Grajena
+         </option>
+                <option               value="Grajski Izviri">Grajski Izviri
+         </option>
+                <option               value="Grosupeljščica">Grosupeljščica
+         </option>
+                <option               value="Hočki potok">Hočki potok
+         </option>
+                <option               value="Hotenjka">Hotenjka
+         </option>
+                <option               value="Hribščica">Hribščica
+         </option>
+                <option               value="Hubelj">Hubelj
+         </option>
+                <option               value="Hudinja">Hudinja
+         </option>
+                <option               value="Idrija">Idrija
+         </option>
+                <option               value="Idrijca">Idrijca
+         </option>
+                <option               value="Idrijca-kanal">Idrijca-kanal
+         </option>
+                <option               value="Iška">Iška
+         </option>
+                <option               value="Ivanjševski potok">Ivanjševski potok
+         </option>
+                <option               value="Izviri Pod Farovžem">Izviri Pod Farovžem
+         </option>
+                <option               value="Ižica">Ižica
+         </option>
+                <option                    selected="selected"
+                                                   value="Jadransko morje">Jadransko morje
+         </option>
+                <option               value="Jamniški potok">Jamniški potok
+         </option>
+                <option               value="Javornik">Javornik
+         </option>
+                <option               value="Javorski potok">Javorski potok
+         </option>
+                <option               value="Jazbina">Jazbina
+         </option>
+                <option               value="Jezernica">Jezernica
+         </option>
+                <option               value="Jezerski potok">Jezerski potok
+         </option>
+                <option               value="Kamniška Bistrica">Kamniška Bistrica
+         </option>
+                <option               value="Kanal Podlipščice">Kanal Podlipščice
+         </option>
+                <option               value="Kanal Roje">Kanal Roje
+         </option>
+                <option               value="Kanal Tržiške Bistrice">Kanal Tržiške Bistrice
+         </option>
+                <option               value="Karavanke iztok">Karavanke iztok
+         </option>
+                <option               value="Kneža">Kneža
+         </option>
+                <option               value="Kobiljski potok">Kobiljski potok
+         </option>
+                <option               value="Kokra">Kokra
+         </option>
+                <option               value="Kolpa">Kolpa
+         </option>
+                <option               value="Koprivnica">Koprivnica
+         </option>
+                <option               value="Koren">Koren
+         </option>
+                <option               value="Koritnica">Koritnica
+         </option>
+                <option               value="Kožbanjšček">Kožbanjšček
+         </option>
+                <option               value="Krivica">Krivica
+         </option>
+                <option               value="Krka">Krka
+         </option>
+                <option               value="Krupa">Krupa
+         </option>
+                <option               value="Kubeški potok">Kubeški potok
+         </option>
+                <option               value="Kučnica">Kučnica
+         </option>
+                <option               value="Ladra">Ladra
+         </option>
+                <option               value="Lahinja">Lahinja
+         </option>
+                <option               value="Lava">Lava
+         </option>
+                <option               value="Ledava">Ledava
+         </option>
+                <option               value="Lepena">Lepena
+         </option>
+                <option               value="Letošč">Letošč
+         </option>
+                <option               value="Ličenca">Ličenca
+         </option>
+                <option               value="Lijak">Lijak
+         </option>
+                <option               value="Lipnica">Lipnica
+         </option>
+                <option               value="Lipsenjščica">Lipsenjščica
+         </option>
+                <option               value="Ljubija">Ljubija
+         </option>
+                <option               value="Ljubljanica">Ljubljanica
+         </option>
+                <option               value="Lobnica">Lobnica
+         </option>
+                <option               value="Ločica">Ločica
+         </option>
+                <option               value="Ločivnica">Ločivnica
+         </option>
+                <option               value="Logaščica">Logaščica
+         </option>
+                <option               value="Lokavec">Lokavec
+         </option>
+                <option               value="Lokva">Lokva
+         </option>
+                <option               value="Loški potok">Loški potok
+         </option>
+                <option               value="Ložnica">Ložnica
+         </option>
+                <option               value="Lučnica">Lučnica
+         </option>
+                <option               value="Lukaj potok">Lukaj potok
+         </option>
+                <option               value="Mačkovski potok">Mačkovski potok
+         </option>
+                <option               value="Mala Božna">Mala Božna
+         </option>
+                <option               value="Mala Ljubljanica">Mala Ljubljanica
+         </option>
+                <option               value="Mala Voda">Mala Voda
+         </option>
+                <option               value="Malenščica">Malenščica
+         </option>
+                <option               value="Mali Močilnik">Mali Močilnik
+         </option>
+                <option               value="Mali Obrh">Mali Obrh
+         </option>
+                <option               value="Martinjščica">Martinjščica
+         </option>
+                <option               value="Martjanski potok">Martjanski potok
+         </option>
+                <option               value="Medija">Medija
+         </option>
+                <option               value="Mestinjščica">Mestinjščica
+         </option>
+                <option               value="Meža">Meža
+         </option>
+                <option               value="Mirna">Mirna
+         </option>
+                <option               value="Mislinja">Mislinja
+         </option>
+                <option               value="Mišca">Mišca
+         </option>
+                <option               value="Mlinski potok">Mlinski potok
+         </option>
+                <option               value="Mlinščica">Mlinščica
+         </option>
+                <option               value="Mlinščica-Kanal">Mlinščica-Kanal
+         </option>
+                <option               value="Močilnik">Močilnik
+         </option>
+                <option               value="Molja">Molja
+         </option>
+                <option               value="Mostnica">Mostnica
+         </option>
+                <option               value="Mošenik">Mošenik
+         </option>
+                <option               value="Možnica">Možnica
+         </option>
+                <option               value="Mura">Mura
+         </option>
+                <option               value="Mura - kanal Vizjak">Mura - kanal Vizjak
+         </option>
+                <option               value="Nadiža">Nadiža
+         </option>
+                <option               value="Nanoščica">Nanoščica
+         </option>
+                <option               value="Natega">Natega
+         </option>
+                <option               value="Neimenovani (Drenaža)">Neimenovani (Drenaža)
+         </option>
+                <option               value="Neimenovani K2">Neimenovani K2
+         </option>
+                <option               value="Neimenovani Pri Mlinu">Neimenovani Pri Mlinu
+         </option>
+                <option               value="Neimenovani 8">Neimenovani 8
+         </option>
+                <option               value="Nevljica">Nevljica
+         </option>
+                <option               value="Obrh">Obrh
+         </option>
+                <option               value="Oplotnica">Oplotnica
+         </option>
+                <option               value="Padež">Padež
+         </option>
+                <option               value="Paka">Paka
+         </option>
+                <option               value="Pesnica">Pesnica
+         </option>
+                <option               value="Petkovec">Petkovec
+         </option>
+                <option               value="Pirešica">Pirešica
+         </option>
+                <option               value="Pivka">Pivka
+         </option>
+                <option               value="Pleterski potok">Pleterski potok
+         </option>
+                <option               value="Podlipščica">Podlipščica
+         </option>
+                <option               value="Podpeški potok">Podpeški potok
+         </option>
+                <option               value="Podroteja">Podroteja
+         </option>
+                <option               value="Podvinski Kanal">Podvinski Kanal
+         </option>
+                <option               value="Polanski potok">Polanski potok
+         </option>
+                <option               value="Poljanska Sora">Poljanska Sora
+         </option>
+                <option               value="Polskava">Polskava
+         </option>
+                <option               value="Poltarica">Poltarica
+         </option>
+                <option               value="Potočnikov potok">Potočnikov potok
+         </option>
+                <option               value="potok">potok
+         </option>
+                <option               value="Prečna">Prečna
+         </option>
+                <option               value="Predorski potok">Predorski potok
+         </option>
+                <option               value="Pristavsko jezero">Pristavsko jezero
+         </option>
+                <option               value="Pšata">Pšata
+         </option>
+                <option               value="Rača">Rača
+         </option>
+                <option               value="Radešca">Radešca
+         </option>
+                <option               value="Radešca-Izvir">Radešca-Izvir
+         </option>
+                <option               value="Radna">Radna
+         </option>
+                <option               value="Radoljna">Radoljna
+         </option>
+                <option               value="Radomlja">Radomlja
+         </option>
+                <option               value="Radomlja Z Drtiščico">Radomlja Z Drtiščico
+         </option>
+                <option               value="Radovna">Radovna
+         </option>
+                <option               value="Radulja">Radulja
+         </option>
+                <option               value="Rak">Rak
+         </option>
+                <option               value="Rakitnica">Rakitnica
+         </option>
+                <option               value="Rašica">Rašica
+         </option>
+                <option               value="Razbremenilnik Bistrice">Razbremenilnik Bistrice
+         </option>
+                <option               value="Razbremenilnik Pšate">Razbremenilnik Pšate
+         </option>
+                <option               value="Rečica">Rečica
+         </option>
+                <option               value="Reka">Reka
+         </option>
+                <option               value="Ribnica">Ribnica
+         </option>
+                <option               value="Rinža">Rinža
+         </option>
+                <option               value="Rinža Zajetje">Rinža Zajetje
+         </option>
+                <option               value="Rižana">Rižana
+         </option>
+                <option               value="Rogatnica">Rogatnica
+         </option>
+                <option               value="Rogoznica">Rogoznica
+         </option>
+                <option               value="Rovtarica">Rovtarica
+         </option>
+                <option               value="Sava">Sava
+         </option>
+                <option               value="Sava Bohinjka">Sava Bohinjka
+         </option>
+                <option               value="Sava Dolinka">Sava Dolinka
+         </option>
+                <option               value="Savica">Savica
+         </option>
+                <option               value="Savinja">Savinja
+         </option>
+                <option               value="Sejanski potok">Sejanski potok
+         </option>
+                <option               value="Selška Sora">Selška Sora
+         </option>
+                <option               value="Senuša">Senuša
+         </option>
+                <option               value="Sevnična">Sevnična
+         </option>
+                <option               value="Slom">Slom
+         </option>
+                <option               value="Soča">Soča
+         </option>
+                <option               value="Solznik">Solznik
+         </option>
+                <option               value="Sopota">Sopota
+         </option>
+                <option               value="Sora">Sora
+         </option>
+                <option               value="Sotla">Sotla
+         </option>
+                <option               value="Struga">Struga
+         </option>
+                <option               value="Stržen">Stržen
+         </option>
+                <option               value="Studena">Studena
+         </option>
+                <option               value="Studenčnica">Studenčnica
+         </option>
+                <option               value="Suhodolnica">Suhodolnica
+         </option>
+                <option               value="Sušica">Sušica
+         </option>
+                <option               value="Sušnica">Sušnica
+         </option>
+                <option               value="Ščavnica">Ščavnica
+         </option>
+                <option               value="Šentflorjanščica">Šentflorjanščica
+         </option>
+                <option               value="Šica">Šica
+         </option>
+                <option               value="Šklendrovec">Šklendrovec
+         </option>
+                <option               value="Škofeljščica">Škofeljščica
+         </option>
+                <option               value="Šujica">Šujica
+         </option>
+                <option               value="Šumec">Šumec
+         </option>
+                <option               value="Temenica">Temenica
+         </option>
+                <option               value="Tesnica">Tesnica
+         </option>
+                <option               value="Težka voda">Težka voda
+         </option>
+                <option               value="Tolminka">Tolminka
+         </option>
+                <option               value="Tominčev Studenec">Tominčev Studenec
+         </option>
+                <option               value="Topla">Topla
+         </option>
+                <option               value="Toplica">Toplica
+         </option>
+                <option               value="Tratna">Tratna
+         </option>
+                <option               value="Trebnik">Trebnik
+         </option>
+                <option               value="Trebuša">Trebuša
+         </option>
+                <option               value="Trnava">Trnava
+         </option>
+                <option               value="Trnavca">Trnavca
+         </option>
+                <option               value="Tržiščica">Tržiščica
+         </option>
+                <option               value="Tržiška Bistrica">Tržiška Bistrica
+         </option>
+                <option               value="Turja">Turja
+         </option>
+                <option               value="Učja">Učja
+         </option>
+                <option               value="Unica">Unica
+         </option>
+                <option               value="Ušivc">Ušivc
+         </option>
+                <option               value="Velika Božna">Velika Božna
+         </option>
+                <option               value="Velika Krka">Velika Krka
+         </option>
+                <option               value="Velika Ljubljanica">Velika Ljubljanica
+         </option>
+                <option               value="Veliki Močilnik">Veliki Močilnik
+         </option>
+                <option               value="Veliki Obrh">Veliki Obrh
+         </option>
+                <option               value="Velka">Velka
+         </option>
+                <option               value="Velunja">Velunja
+         </option>
+                <option               value="Vipava">Vipava
+         </option>
+                <option               value="Višnjica">Višnjica
+         </option>
+                <option               value="Voglajna">Voglajna
+         </option>
+                <option               value="Voglajna S Hudinjo">Voglajna S Hudinjo
+         </option>
+                <option               value="Vogršček">Vogršček
+         </option>
+                <option               value="Volarja">Volarja
+         </option>
+                <option               value="Vuhredščica">Vuhredščica
+         </option>
+                <option               value="Zadlaščica">Zadlaščica
+         </option>
+                <option               value="Zadnjica">Zadnjica
+         </option>
+                <option               value="Zapoški potok">Zapoški potok
+         </option>
+                <option               value="Završnica">Završnica
+         </option>
+                <option               value="Zornica">Zornica
+         </option>
+                <option               value="Zupanovi Izviri">Zupanovi Izviri
+         </option>
+                <option               value="Zvirenčina">Zvirenčina
+         </option>
+                <option               value="Želimeljščica">Želimeljščica
+         </option>
+                <option               value="Žerovnišca">Žerovnišca
+         </option>
+         
+     </select></p>
+ <p>Vodomerna postaja:
+     <select size="1" name="p_postaja" onChange="javascript:reload_postaja(this,p_vodotok.value)">
+                       <option                value="9350">Koper - kapitanija
+         </option>
+         
+     </select></p>
+</form>
+	 <hr>
+	 	 
+	 <form method="GET" action="pov_arhiv_tab.php" id="f1">
+       <input name="p_vodotok" type="hidden" value="Jadransko morje"> 
+        <input name="p_postaja" type="hidden" value="9350"> 
+    <p>Leto podatkov: 
+     <select size="1" name="p_leto" tabindex="3">
+                <option  value="1957">1957</option>
+                <option  value="1958">1958</option>
+                <option  value="1959">1959</option>
+                <option  value="1960">1960</option>
+                <option  value="1961">1961</option>
+                <option  value="1962">1962</option>
+                <option  value="1963">1963</option>
+                <option  value="1964">1964</option>
+                <option  value="1965">1965</option>
+                <option  value="1966">1966</option>
+                <option  value="1967">1967</option>
+                <option  value="1968">1968</option>
+                <option  value="1969">1969</option>
+                <option  value="1970">1970</option>
+                <option  value="1971">1971</option>
+                <option  value="1972">1972</option>
+                <option  value="1973">1973</option>
+                <option  value="1974">1974</option>
+                <option  value="1975">1975</option>
+                <option  value="1976">1976</option>
+                <option  value="1977">1977</option>
+                <option  value="1978">1978</option>
+                <option  value="1979">1979</option>
+                <option  value="1980">1980</option>
+                <option  value="1981">1981</option>
+                <option  value="1982">1982</option>
+                <option  value="1983">1983</option>
+                <option  value="1984">1984</option>
+                <option  value="1985">1985</option>
+                <option  value="1986">1986</option>
+                <option  value="1987">1987</option>
+                <option  value="1988">1988</option>
+                <option  value="1989">1989</option>
+                <option  value="1990">1990</option>
+                <option  value="1991">1991</option>
+                <option  value="1992">1992</option>
+                <option  value="1993">1993</option>
+                <option  value="1994">1994</option>
+                <option  value="1995">1995</option>
+                <option  value="1996">1996</option>
+                <option  value="1997">1997</option>
+                <option  value="1998">1998</option>
+                <option  value="1999">1999</option>
+                <option  value="2000">2000</option>
+                <option  value="2001">2001</option>
+                <option  value="2002">2002</option>
+                <option  value="2003">2003</option>
+                <option  value="2004">2004</option>
+                <option  value="2005">2005</option>
+                <option  value="2006">2006</option>
+                <option  value="2007">2007</option>
+                <option  value="2008">2008</option>
+                <option  value="2009">2009</option>
+                <option  value="2010">2010</option>
+                <option  value="2011">2011</option>
+                <option  value="2012">2012</option>
+                <option  value="2013">2013</option>
+                <option  value="2014">2014</option>
+                <option  value="2015">2015</option>
+                <option  value="2016">2016</option>
+                <option  value="2017">2017</option>
+                <option  value="2018">2018</option>
+                <option  value="2019">2019</option>
+                <option  value="2020">2020</option>
+                <option  value="2021">2021</option>
+                <option  value="2022">2022</option>
+                <option  value="2023">2023</option>
+                <option  value="2024">2024</option>
+         
+     </select>
+     <input type="submit" value="Prikaži" name="b_arhiv">
+  </p>
+</form>
+<form method="GET" action="pov_arhiv_tab.php" id="f2">
+       <input name="p_vodotok" type="hidden" value="Jadransko morje"> 
+        <input name="p_postaja" type="hidden" value="9350"> 
+    <p>
+  <table>
+    <tr>
+      <td>Izvoz obdobja:</td>
+	  <td>Začetno leto: 
+			 <select size="1" name="p_od_leto" tabindex="3">
+			    		          <option value="1957">1957</option>
+		       		          <option value="1958">1958</option>
+		       		          <option value="1959">1959</option>
+		       		          <option value="1960">1960</option>
+		       		          <option value="1961">1961</option>
+		       		          <option value="1962">1962</option>
+		       		          <option value="1963">1963</option>
+		       		          <option value="1964">1964</option>
+		       		          <option value="1965">1965</option>
+		       		          <option value="1966">1966</option>
+		       		          <option value="1967">1967</option>
+		       		          <option value="1968">1968</option>
+		       		          <option value="1969">1969</option>
+		       		          <option value="1970">1970</option>
+		       		          <option value="1971">1971</option>
+		       		          <option value="1972">1972</option>
+		       		          <option value="1973">1973</option>
+		       		          <option value="1974">1974</option>
+		       		          <option value="1975">1975</option>
+		       		          <option value="1976">1976</option>
+		       		          <option value="1977">1977</option>
+		       		          <option value="1978">1978</option>
+		       		          <option value="1979">1979</option>
+		       		          <option value="1980">1980</option>
+		       		          <option value="1981">1981</option>
+		       		          <option value="1982">1982</option>
+		       		          <option value="1983">1983</option>
+		       		          <option value="1984">1984</option>
+		       		          <option value="1985">1985</option>
+		       		          <option value="1986">1986</option>
+		       		          <option value="1987">1987</option>
+		       		          <option value="1988">1988</option>
+		       		          <option value="1989">1989</option>
+		       		          <option value="1990">1990</option>
+		       		          <option value="1991">1991</option>
+		       		          <option value="1992">1992</option>
+		       		          <option value="1993">1993</option>
+		       		          <option value="1994">1994</option>
+		       		          <option value="1995">1995</option>
+		       		          <option value="1996">1996</option>
+		       		          <option value="1997">1997</option>
+		       		          <option value="1998">1998</option>
+		       		          <option value="1999">1999</option>
+		       		          <option value="2000">2000</option>
+		       		          <option value="2001">2001</option>
+		       		          <option value="2002">2002</option>
+		       		          <option value="2003">2003</option>
+		       		          <option value="2004">2004</option>
+		       		          <option value="2005">2005</option>
+		       		          <option value="2006">2006</option>
+		       		          <option value="2007">2007</option>
+		       		          <option value="2008">2008</option>
+		       		          <option value="2009">2009</option>
+		       		          <option value="2010">2010</option>
+		       		          <option value="2011">2011</option>
+		       		          <option value="2012">2012</option>
+		       		          <option value="2013">2013</option>
+		       		          <option value="2014">2014</option>
+		       		          <option value="2015">2015</option>
+		       		          <option value="2016">2016</option>
+		       		          <option value="2017">2017</option>
+		       		          <option value="2018">2018</option>
+		       		          <option value="2019">2019</option>
+		       		          <option value="2020">2020</option>
+		       		          <option value="2021">2021</option>
+		       		          <option value="2022">2022</option>
+		       		          <option value="2023">2023</option>
+		       		          <option value="2024">2024</option>
+		         
+		     </select>
+	  </td>
+	  <td>Končno leto:
+		     <select size="1" name="p_do_leto" tabindex="3">
+		       		         <option value="1957">1957</option>
+		       		         <option value="1958">1958</option>
+		       		         <option value="1959">1959</option>
+		       		         <option value="1960">1960</option>
+		       		         <option value="1961">1961</option>
+		       		         <option value="1962">1962</option>
+		       		         <option value="1963">1963</option>
+		       		         <option value="1964">1964</option>
+		       		         <option value="1965">1965</option>
+		       		         <option value="1966">1966</option>
+		       		         <option value="1967">1967</option>
+		       		         <option value="1968">1968</option>
+		       		         <option value="1969">1969</option>
+		       		         <option value="1970">1970</option>
+		       		         <option value="1971">1971</option>
+		       		         <option value="1972">1972</option>
+		       		         <option value="1973">1973</option>
+		       		         <option value="1974">1974</option>
+		       		         <option value="1975">1975</option>
+		       		         <option value="1976">1976</option>
+		       		         <option value="1977">1977</option>
+		       		         <option value="1978">1978</option>
+		       		         <option value="1979">1979</option>
+		       		         <option value="1980">1980</option>
+		       		         <option value="1981">1981</option>
+		       		         <option value="1982">1982</option>
+		       		         <option value="1983">1983</option>
+		       		         <option value="1984">1984</option>
+		       		         <option value="1985">1985</option>
+		       		         <option value="1986">1986</option>
+		       		         <option value="1987">1987</option>
+		       		         <option value="1988">1988</option>
+		       		         <option value="1989">1989</option>
+		       		         <option value="1990">1990</option>
+		       		         <option value="1991">1991</option>
+		       		         <option value="1992">1992</option>
+		       		         <option value="1993">1993</option>
+		       		         <option value="1994">1994</option>
+		       		         <option value="1995">1995</option>
+		       		         <option value="1996">1996</option>
+		       		         <option value="1997">1997</option>
+		       		         <option value="1998">1998</option>
+		       		         <option value="1999">1999</option>
+		       		         <option value="2000">2000</option>
+		       		         <option value="2001">2001</option>
+		       		         <option value="2002">2002</option>
+		       		         <option value="2003">2003</option>
+		       		         <option value="2004">2004</option>
+		       		         <option value="2005">2005</option>
+		       		         <option value="2006">2006</option>
+		       		         <option value="2007">2007</option>
+		       		         <option value="2008">2008</option>
+		       		         <option value="2009">2009</option>
+		       		         <option value="2010">2010</option>
+		       		         <option value="2011">2011</option>
+		       		         <option value="2012">2012</option>
+		       		         <option value="2013">2013</option>
+		       		         <option value="2014">2014</option>
+		       		         <option value="2015">2015</option>
+		       		         <option value="2016">2016</option>
+		       		         <option value="2017">2017</option>
+		       		         <option value="2018">2018</option>
+		       		         <option value="2019">2019</option>
+		       		         <option value="2020">2020</option>
+		       		         <option value="2021">2021</option>
+		       		         <option value="2022">2022</option>
+		       		         <option value="2023">2023</option>
+		       		         <option value="2024">2024</option>
+		         
+		     </select>
+	  </td>
+	  <td><input type="submit" value="Izvoz dnevnih vrednosti v XLS" name="b_oddo_XLS"></td>
+	  <td><input type="submit" value="Izvoz dnevnih vrednosti v CSV" name="b_oddo_CSV"></td>
+	</tr>
+	<tr>
+	  <td></td>
+	  <td></td>
+	  <td></td>
+	  <td><input type="submit" value="Izvoz ekstremnih vrednosti v XLS" name="b_eks_XLS"></td>
+	  <td><input type="submit" value="Izvoz ekstremnih vrednosti v CSV" name="b_eks_CSV"></td>
+	</tr>
+  </table>
+  </p>
+</form>
+
+
+
+<script type="text/javascript">
+
+	   jQuery.fn.dataTableExt.aTypes.push(
+               function ( sData )
+               {
+                   if (sData.match(/^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[012])\.(18|19|20|21)\d\d$/))
+                   {
+                       return 'slo_date';
+                   }
+                   return null;
+               }
+           );
+
+
+            jQuery.fn.dataTableExt.oSort['slo_date-asc']  = function(a,b) {
+                var ukDatea = a.split('.');
+                var ukDateb = b.split('.');
+
+                var x = (ukDatea[2] * 10000 + ukDatea[1] * 100 + ukDatea[0]) * 1;
+                var y = (ukDateb[2] * 10000 + ukDateb[1] * 100 + ukDateb[0]) * 1;
+
+                return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+            };
+
+            jQuery.fn.dataTableExt.oSort['slo_date-desc'] = function(a,b) {
+                var ukDatea = a.split('.');
+                var ukDateb = b.split('.');
+
+                var x = (ukDatea[2] * 10000 + ukDatea[1] * 100 + ukDatea[0]) * 1;
+                var y = (ukDateb[2] * 10000 + ukDateb[1] * 100 + ukDateb[0]) * 1;
+
+                return ((x < y) ? 1 : ((x > y) ?  -1 : 0));
+            };
+
+  /* Global variable for the DataTables object */
+  var oTable;
+  var asInitVals = new Array();
+  /* jQuery.noConflict();  */
+  jQuery(document).ready(function() {
+	   oTable = jQuery('#lepa_tabela').dataTable({
+		"oLanguage": {
+			"sUrl": "js/dataTables-1.6/media/language/sl_SL.txt"
+			},
+		"bFilter":   false,
+		"bPaginate": true,
+		"aoColumns": [ 
+			/* datum */ { "bSortable":   true  }
+
+ 							,null
+			
+		]
+		} );
+		
+	$("tfoot input").keyup( function () {
+		/* Filter on the column (the index) of this element */
+		oTable.fnFilter( this.value, $("tfoot input").index(this) );
+	} );
+	
+	
+	
+	/*
+	 * Support functions to provide a little bit of 'user friendlyness' to the textboxes in 
+	 * the footer
+	 */
+	$("tfoot input").each( function (i) {
+		asInitVals[i] = this.value;
+	} );
+	
+	$("tfoot input").focus( function () {
+		if ( this.className == "search_init" )
+		{
+			this.className = "";
+			this.value = "";
+		}
+	} );
+	
+	$("tfoot input").blur( function (i) {
+		if ( this.value == "" )
+		{
+			this.className = "search_init";
+			this.value = asInitVals[$("tfoot input").index(this)];
+		}
+	} );
+  } );
+	
+	
+	function fnVsiZapisi() {
+		oTable.fnAddData( [
+			giCount+".1",
+			giCount+".2",
+			giCount+".3",
+			giCount+".4" ] );
+			
+			giCount++;
+	};
+	
+jQuery(function(){
+	jQuery('#tab1').SkiyoTabs({
+			className:'select',  //?????li???.????????? ???selected
+			eventName:'click'
+	});
+	jQuery('#tab2').SkiyoTabs({
+			className:'select',  //?????li???.????????? ???selected
+			eventName:'mouseover'
+	});
+	jQuery('#tab3').SkiyoTabs({
+			className:'select',  //?????li???.????????? ???selected
+			eventName:'all'
+	});
+});
+
+</script>
+
+
+            </td>
+            <!-- meni 3 / -->
+          </tr>
+          <tr class="lokacija">
+            <td class="bottom" style="background-color: white; border: 0 none;">
+                <a href="#"><img src="//www.arso.gov.si/stil/meni3_navrh.gif" alt="Na vrh" /></a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <!-- noga -->
+
+<br>
+  <div class="sirina_strani">
+   <TABLE border=0 width=100%>
+     <TR class="lokacija">
+        <TD>
+<b>Pogoji uporabe podatkov</b><br>
+Pri objavi, distribuciji ali uporabi podatkov v kakršnekoli  namene je potrebno citirati vir podatkov:  Agencije Republike Slovenije za okolje (ali skrajšano: ARSO). ARSO ne prevzema nobene  odgovornosti v povezavi z  uporabo objavljenih podatkov ali  za odločitve, sprejete na osnovi objavljenih podatkov. Podatki v arhivu so pregledani, vseeno pa so v njih možne napake, zato lahko prihaja do popravkov. V kolikor pri pregledovanju ali analizah podatkov opazite kakršnokoli napako ali neskladje, nas, prosimo, na to opozorite (<a href="mailto://gp.arso@gov.si">gp.arso@gov.si </a>). Napako bomo preverili in odpravili. 
+        </TD>
+     </TR>
+   </TABLE>
+   </div>
+
+    <div id="noga">
+
+       <TABLE class="nozna">
+        <TBODY>
+        <TR>
+
+          <TD class="desna">
+		   AGENCIJA REPUBLIKE SLOVENIJE ZA OKOLJE<BR>
+		   Vojkova 1b, SI-1000 Ljubljana, Slovenija&nbsp;&nbsp;&nbsp; Tel: +386 (0)1 4784 000&nbsp;&nbsp;&nbsp; Fax: +386 (0)1 4784 052 <BR>
+		   <a href="http://www.arso.gov.si/Izjava_o_dostopnosti.html">Izjava o dostopnosti</a>
+           </TD>
+
+		  </TR>
+		 </TBODY>
+		</TABLE>
+
+  </div>
+
+  <!-- /noga -->
+</body>
+
+</html>
