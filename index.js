@@ -3029,16 +3029,14 @@ const SLO_COAST_200M_GUIDE_NODES = [
     [45.497862, 13.581808],
     [45.495526, 13.584108],
     [45.494240, 13.585576],
-    [45.492375, 13.585607],
     [45.490621, 13.587525],
     [45.488732, 13.589453],
     [45.486646, 13.589527],
     [45.484172, 13.589854],
     [45.482396, 13.588688],
     [45.481762, 13.586959],
-    [45.480198, 13.584447],
+    [45.480198, 13.584447]
 ];
-
 
 // High-precision Slovenian Coastline Closed Polygon (OSM Verified)
 const SLO_COASTLINE_POLYGON = [
@@ -6485,6 +6483,30 @@ function updateNavigationGuidanceWidget(boatLat, boatLon, currentSogKnots, curre
             deltaTextEl.textContent = `\u25C0 ${Math.round(absDelta)}\u00B0`;
         }
     }
+
+    // Cockpit Guidance Widget Sync
+    const cgRing = document.getElementById('cockpit-guidance-ring');
+    const cgMarker = document.getElementById('cockpit-guidance-rim-marker');
+    const cgPip = document.getElementById('cockpit-guidance-rim-pip');
+    const cgArrow = document.getElementById('cockpit-guidance-target-arrow');
+    const cgPoly = document.getElementById('cockpit-guidance-arrow-poly');
+    const cgDelta = document.getElementById('cockpit-guidance-delta-text');
+
+    if (cgRing) cgRing.setAttribute('stroke', isMoving ? statusColor : '#ffffff');
+    if (cgMarker) cgMarker.style.transform = 'rotate(0deg)';
+    if (cgPip) cgPip.setAttribute('fill', isMoving ? statusColor : '#ffffff');
+    if (cgArrow) cgArrow.style.transform = `rotate(${relDelta}deg)`;
+    if (cgPoly) cgPoly.setAttribute('fill', statusColor);
+    if (cgDelta) {
+        cgDelta.style.color = statusColor;
+        if (absDelta <= 2) {
+            cgDelta.textContent = '\u2713 0\u00B0';
+        } else if (relDelta > 0) {
+            cgDelta.textContent = `${Math.round(absDelta)}\u00B0 \u25B6`;
+        } else {
+            cgDelta.textContent = `\u25C0 ${Math.round(absDelta)}\u00B0`;
+        }
+    }
 }
 
 // Make all essential functions explicitly global on window
@@ -6508,3 +6530,803 @@ window.shareCurrentLocation = shareCurrentLocation;
 window.requestCompassPermission = requestCompassPermission;
 window.toggleMapFullscreen = toggleMapFullscreen;
 
+
+
+// =========================================================================
+// FAVORITE DESTINATIONS (PRILJUBLJENI CILJI) SYSTEM
+// =========================================================================
+
+const DEFAULT_FAVORITE_DESTINATIONS = [
+    { id: 'fav_piran', name: 'Piran', lat: 45.5280, lon: 13.5670 },
+    { id: 'fav_portoroz', name: 'Portorož', lat: 45.5135, lon: 13.5855 },
+    { id: 'fav_izola', name: 'Izola', lat: 45.5385, lon: 13.6605 },
+    { id: 'fav_koper', name: 'Koper', lat: 45.5488, lon: 13.7265 }
+];
+
+let favoriteDestinations = [];
+let activeFavoriteDestId = null;
+let isPickingFavoriteOnMap = false;
+let pendingFavoriteName = '';
+
+function loadFavoriteDestinations() {
+    try {
+        const saved = localStorage.getItem('plima_favorite_destinations');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                favoriteDestinations = parsed;
+                return;
+            }
+        }
+    } catch (e) {
+        console.warn('Error reading favorite destinations:', e);
+    }
+    favoriteDestinations = [...DEFAULT_FAVORITE_DESTINATIONS];
+    saveFavoriteDestinations();
+}
+
+function saveFavoriteDestinations() {
+    try {
+        localStorage.setItem('plima_favorite_destinations', JSON.stringify(favoriteDestinations));
+    } catch (e) {
+        console.warn('Error saving favorite destinations:', e);
+    }
+}
+
+function renderFavoriteDestinationsUI() {
+    const container = document.getElementById('fav-dests-pills');
+    if (!container) return;
+
+    if (favoriteDestinations.length === 0) {
+        loadFavoriteDestinations();
+    }
+
+    let html = '';
+    favoriteDestinations.forEach(fav => {
+        const isActive = (activeFavoriteDestId === fav.id);
+        html += `
+            <div class="fav-dest-chip ${isActive ? 'active' : ''}" onclick="selectFavoriteDestination('${fav.id}')">
+                <span>${fav.name}</span>
+                <button type="button" class="fav-dest-delete-btn" onclick="deleteFavoriteDestination('${fav.id}', event)" title="Izbriši cilj ${fav.name}">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+    });
+
+    html += `
+        <button type="button" class="fav-dest-add-btn" onclick="openAddFavoriteModal()" title="Dodaj nov priljubljen cilj">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+    `;
+
+    container.innerHTML = html;
+}
+window.renderFavoriteDestinationsUI = renderFavoriteDestinationsUI;
+
+function selectFavoriteDestination(id) {
+    const fav = favoriteDestinations.find(f => f.id === id);
+    if (!fav) return;
+
+    activeFavoriteDestId = id;
+    const destWp = routeWaypoints.find(w => w.type === 'dest');
+    if (destWp) {
+        destWp.lat = fav.lat;
+        destWp.lon = fav.lon;
+        destWp.label = `${fav.name} (${formatNauticalCoord(fav.lat, true)}, ${formatNauticalCoord(fav.lon, false)})`;
+    }
+
+    updateWaypointRowsUI();
+    updateWaypointMarkersOnMap();
+    recalculateCurrentRoute();
+    renderFavoriteDestinationsUI();
+}
+window.selectFavoriteDestination = selectFavoriteDestination;
+
+function deleteFavoriteDestination(id, event) {
+    if (event) event.stopPropagation();
+    const fav = favoriteDestinations.find(f => f.id === id);
+    const favName = fav ? fav.name : 'ta cilj';
+    
+    if (confirm(`Ali ste prepričani, da želite odstraniti "${favName}" iz priljubljenih ciljev?`)) {
+        favoriteDestinations = favoriteDestinations.filter(f => f.id !== id);
+        if (activeFavoriteDestId === id) {
+            activeFavoriteDestId = null;
+        }
+        saveFavoriteDestinations();
+        renderFavoriteDestinationsUI();
+    }
+}
+window.deleteFavoriteDestination = deleteFavoriteDestination;
+
+function openAddFavoriteModal() {
+    const modal = document.getElementById('fav-dest-modal');
+    const input = document.getElementById('fav-dest-name-input');
+    if (modal) modal.style.display = 'flex';
+    if (input) {
+        input.value = '';
+        input.focus();
+    }
+}
+window.openAddFavoriteModal = openAddFavoriteModal;
+
+function closeAddFavoriteModal(event) {
+    if (event && event.target && event.target.id !== 'fav-dest-modal' && !event.target.classList.contains('modal-close-btn')) {
+        return;
+    }
+    const modal = document.getElementById('fav-dest-modal');
+    if (modal) modal.style.display = 'none';
+}
+window.closeAddFavoriteModal = closeAddFavoriteModal;
+
+function submitAddFavorite(mode) {
+    const input = document.getElementById('fav-dest-name-input');
+    const name = (input && input.value.trim().length > 0) ? input.value.trim() : 'Priljubljen cilj';
+    const modal = document.getElementById('fav-dest-modal');
+    if (modal) modal.style.display = 'none';
+
+    if (mode === 'gps') {
+        if (!lastGpsCoords) {
+            alert('GPS lokacija še ni pridobljena. Preverite, da je GPS vklopljen.');
+            return;
+        }
+        const newFav = {
+            id: 'fav_' + Date.now(),
+            name: name,
+            lat: lastGpsCoords.latitude,
+            lon: lastGpsCoords.longitude
+        };
+        favoriteDestinations.push(newFav);
+        saveFavoriteDestinations();
+        selectFavoriteDestination(newFav.id);
+    } else if (mode === 'map') {
+        isPickingFavoriteOnMap = true;
+        pendingFavoriteName = name;
+        alert(`Izbira točke za "${name}":\nKliknite na želeno lokacijo na zemljevidu.`);
+    }
+}
+window.submitAddFavorite = submitAddFavorite;
+
+// Hook into handleMapClickForWaypoint to support map picking
+const originalHandleMapClickForWaypoint = handleMapClickForWaypoint;
+handleMapClickForWaypoint = function(lat, lon) {
+    if (isPickingFavoriteOnMap) {
+        const newFav = {
+            id: 'fav_' + Date.now(),
+            name: pendingFavoriteName || 'Priljubljen cilj',
+            lat: lat,
+            lon: lon
+        };
+        favoriteDestinations.push(newFav);
+        saveFavoriteDestinations();
+        isPickingFavoriteOnMap = false;
+        pendingFavoriteName = '';
+        selectFavoriteDestination(newFav.id);
+        return;
+    }
+    originalHandleMapClickForWaypoint(lat, lon);
+};
+window.handleMapClickForWaypoint = handleMapClickForWaypoint;
+
+
+// =========================================================================
+// FULLSCREEN TACTICAL COCKPIT (LANDSCAPE ORIENTED) SYSTEM
+// =========================================================================
+
+let cockpitConfig = {
+    order: ['speed', 'compass', 'guidance'],
+    hidden: []
+};
+
+function isGuidanceConditionMet() {
+    const hasRoute = (typeof currentCalculatedRouteCoords !== 'undefined') && currentCalculatedRouteCoords && currentCalculatedRouteCoords.length > 0;
+    const destWp = (typeof routeWaypoints !== 'undefined') && routeWaypoints && routeWaypoints.find(w => w.type === 'dest' && w.lat !== null && w.lon !== null);
+    return (typeof isCruiseActive !== 'undefined' && isCruiseActive) || hasRoute || !!destWp;
+}
+
+function loadCockpitConfig() {
+    try {
+        const saved = localStorage.getItem('plima_fullscreen_cockpit_config');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed.order) && parsed.order.length > 0) {
+                cockpitConfig = parsed;
+                if (!Array.isArray(cockpitConfig.hidden)) cockpitConfig.hidden = [];
+                return;
+            }
+        }
+    } catch (e) {
+        console.warn('Error loading cockpit config:', e);
+    }
+    cockpitConfig = { order: ['speed', 'compass', 'guidance'], hidden: [] };
+}
+
+function saveCockpitConfig() {
+    try {
+        localStorage.setItem('plima_fullscreen_cockpit_config', JSON.stringify(cockpitConfig));
+    } catch (e) {
+        console.warn('Error saving cockpit config:', e);
+    }
+}
+
+function openCockpitFullscreen() {
+    loadCockpitConfig();
+    const overlay = document.getElementById('cockpit-fullscreen-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+
+    if (overlay.requestFullscreen) {
+        overlay.requestFullscreen().catch(() => {});
+    } else if (overlay.webkitRequestFullscreen) {
+        overlay.webkitRequestFullscreen();
+    }
+
+    if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {});
+    }
+
+    renderCockpitInstruments();
+    if (lastGpsCoords) {
+        updateGpsUI({ coords: lastGpsCoords });
+    }
+}
+window.openCockpitFullscreen = openCockpitFullscreen;
+
+function closeCockpitFullscreen() {
+    const overlay = document.getElementById('cockpit-fullscreen-overlay');
+    if (overlay) overlay.style.display = 'none';
+
+    if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+    }
+
+    if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+    } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    }
+}
+window.closeCockpitFullscreen = closeCockpitFullscreen;
+
+function moveCockpitInstrument(id, direction) {
+    const guidanceAvailable = isGuidanceConditionMet();
+    const visibleOrder = cockpitConfig.order.filter(k => {
+        if (cockpitConfig.hidden.includes(k)) return false;
+        if (k === 'guidance' && !guidanceAvailable) return false;
+        return true;
+    });
+
+    const idx = visibleOrder.indexOf(id);
+    if (idx === -1) return;
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= visibleOrder.length) return;
+
+    const fullIdx1 = cockpitConfig.order.indexOf(id);
+    const targetId = visibleOrder[targetIdx];
+    const fullIdx2 = cockpitConfig.order.indexOf(targetId);
+
+    const temp = cockpitConfig.order[fullIdx1];
+    cockpitConfig.order[fullIdx1] = cockpitConfig.order[fullIdx2];
+    cockpitConfig.order[fullIdx2] = temp;
+
+    saveCockpitConfig();
+    renderCockpitInstruments();
+    if (lastGpsCoords) updateGpsUI({ coords: lastGpsCoords });
+}
+window.moveCockpitInstrument = moveCockpitInstrument;
+
+function hideCockpitInstrument(id) {
+    if (!cockpitConfig.hidden.includes(id)) {
+        cockpitConfig.hidden.push(id);
+    }
+    saveCockpitConfig();
+    renderCockpitInstruments();
+}
+window.hideCockpitInstrument = hideCockpitInstrument;
+
+function restoreCockpitInstrument(id) {
+    cockpitConfig.hidden = cockpitConfig.hidden.filter(h => h !== id);
+    if (!cockpitConfig.order.includes(id)) {
+        cockpitConfig.order.push(id);
+    }
+    saveCockpitConfig();
+    renderCockpitInstruments();
+    if (lastGpsCoords) updateGpsUI({ coords: lastGpsCoords });
+}
+window.restoreCockpitInstrument = restoreCockpitInstrument;
+
+function toggleCockpitRestoreMenu() {
+    const menu = document.getElementById('cockpit-restore-menu');
+    if (!menu) return;
+    menu.style.display = (menu.style.display === 'none' || !menu.style.display) ? 'flex' : 'none';
+}
+window.toggleCockpitRestoreMenu = toggleCockpitRestoreMenu;
+
+function renderCockpitInstruments() {
+    const stage = document.getElementById('cockpit-stage');
+    const restoreDropdown = document.getElementById('cockpit-restore-dropdown');
+    const restoreMenu = document.getElementById('cockpit-restore-menu');
+    if (!stage) return;
+
+    loadCockpitConfig();
+
+    const instDefinitions = {
+        speed: {
+            title: 'HITROST PLOVBE (SOG)',
+            icon: 'fa-gauge-high',
+            render: () => `
+                <div class="gauge-display-box cockpit-gauge-box">
+                    <svg viewBox="0 0 260 260" class="marine-gauge-svg">
+                        <defs>
+                            <linearGradient id="cockpitChromeBezelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#e2e8f0"/>
+                                <stop offset="20%" stop-color="#ffffff"/>
+                                <stop offset="40%" stop-color="#64748b"/>
+                                <stop offset="55%" stop-color="#334155"/>
+                                <stop offset="75%" stop-color="#cbd5e1"/>
+                                <stop offset="90%" stop-color="#ffffff"/>
+                                <stop offset="100%" stop-color="#475569"/>
+                            </linearGradient>
+                            <linearGradient id="cockpitChromeInnerGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#334155"/>
+                                <stop offset="30%" stop-color="#94a3b8"/>
+                                <stop offset="50%" stop-color="#ffffff"/>
+                                <stop offset="70%" stop-color="#475569"/>
+                                <stop offset="100%" stop-color="#cbd5e1"/>
+                            </linearGradient>
+                            <radialGradient id="cockpitGaugeBgGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#1e293b"/>
+                                <stop offset="85%" stop-color="#0f172a"/>
+                                <stop offset="100%" stop-color="#020617"/>
+                            </radialGradient>
+                            <linearGradient id="cockpitSpeedArcGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#00f0ff"/>
+                                <stop offset="45%" stop-color="#10b981"/>
+                                <stop offset="75%" stop-color="#f59e0b"/>
+                                <stop offset="100%" stop-color="#ef4444"/>
+                            </linearGradient>
+                            <filter id="cockpitNeonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                            </filter>
+                        </defs>
+
+                        <!-- Chrome Bezel Outer Ring & Bevel -->
+                        <circle cx="130" cy="130" r="128" fill="url(#cockpitChromeBezelGrad)"/>
+                        <circle cx="130" cy="130" r="122" fill="url(#cockpitChromeInnerGrad)"/>
+                        <!-- Decorative Chrome Screws -->
+                        <circle cx="130" cy="6.5" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="128.5" y1="6.5" x2="131.5" y2="6.5" stroke="#334155" stroke-width="0.8"/>
+                        <circle cx="253.5" cy="130" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="253.5" y1="128.5" x2="253.5" y2="131.5" stroke="#334155" stroke-width="0.8"/>
+                        <circle cx="130" cy="253.5" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="128.5" y1="253.5" x2="131.5" y2="253.5" stroke="#334155" stroke-width="0.8"/>
+                        <circle cx="6.5" cy="130" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="6.5" y1="128.5" x2="6.5" y2="131.5" stroke="#334155" stroke-width="0.8"/>
+
+                        <!-- Inner Dark Dial Face Disc -->
+                        <circle cx="130" cy="130" r="118" fill="url(#cockpitGaugeBgGrad)" stroke="#0f172a" stroke-width="2"/>
+                        <circle cx="130" cy="130" r="116" fill="none" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2"/>
+                        <circle cx="130" cy="130" r="104" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+
+                        <!-- Background Track Arc (270 deg from 135 to 405) -->
+                        <path d="M 56.5 203.5 A 104 104 0 1 1 203.5 203.5" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="11" stroke-linecap="round"/>
+                        
+                        <!-- Active Speed Arc Fill with Neon Glow -->
+                        <path id="cockpit-speed-gauge-arc" d="M 56.5 203.5 A 104 104 0 1 1 203.5 203.5" fill="none" stroke="url(#cockpitSpeedArcGrad)" stroke-width="11" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490" style="transition: stroke-dashoffset 0.4s ease-out;"/>
+                        
+                        <!-- Scale Ticks (Every 1 knot) -->
+                        <g class="gauge-ticks">
+                            <!-- Major ticks (every 2 knots) -->
+                            <g stroke="#ffffff" stroke-width="3" opacity="0.95">
+                                <line x1='56.5' y1='203.5' x2='63.5' y2='196.5'/>
+                                <line x1='31.1' y1='162.1' x2='40.6' y2='159.0'/>
+                                <line x1='27.3' y1='113.7' x2='37.2' y2='115.3'/>
+                                <line x1='45.9' y1='68.9' x2='54.0' y2='74.8'/>
+                                <line x1='82.8' y1='37.3' x2='87.3' y2='46.2'/>
+                                <line x1='130.0' y1='26.0' x2='130.0' y2='36.0'/>
+                                <line x1='177.2' y1='37.3' x2='172.7' y2='46.2'/>
+                                <line x1='214.1' y1='68.9' x2='206.0' y2='74.8'/>
+                                <line x1='232.7' y1='113.7' x2='222.8' y2='115.3'/>
+                                <line x1='228.9' y1='162.1' x2='219.4' y2='159.0'/>
+                                <line x1='203.5' y1='203.5' x2='196.5' y2='196.5'/>
+                            </g>
+                            <!-- Minor ticks (every 1 knot) -->
+                            <g stroke="#94a3b8" stroke-width="1.6" opacity="0.75">
+                                <line x1='41.3' y1='184.3' x2='45.6' y2='181.7'/>
+                                <line x1='26.3' y1='138.1' x2='31.3' y2='137.8'/>
+                                <line x1='33.9' y1='90.2' x2='38.5' y2='92.1'/>
+                                <line x1='62.5' y1='50.9' x2='65.7' y2='54.8'/>
+                                <line x1='105.7' y1='28.7' x2='106.9' y2='33.6'/>
+                                <line x1='154.3' y1='28.7' x2='153.1' y2='33.6'/>
+                                <line x1='197.5' y1='50.9' x2='194.3' y2='54.8'/>
+                                <line x1='226.1' y1='90.2' x2='221.5' y2='92.1'/>
+                                <line x1='233.7' y1='138.1' x2='228.7' y2='137.8'/>
+                                <line x1='218.7' y1='184.3' x2='214.4' y2='181.7'/>
+                            </g>
+                        </g>
+
+                        <!-- Number Labels (Every 2 knots) -->
+                        <g class="gauge-labels" fill="#ffffff" font-family="'Outfit', sans-serif" font-size="13.5" font-weight="800">
+                            <text x='72' y='188' text-anchor='middle' dominant-baseline='central'>0</text>
+                            <text x='52' y='155' text-anchor='middle' dominant-baseline='central'>2</text>
+                            <text x='49' y='117' text-anchor='middle' dominant-baseline='central'>4</text>
+                            <text x='64' y='82' text-anchor='middle' dominant-baseline='central'>6</text>
+                            <text x='93' y='57' text-anchor='middle' dominant-baseline='central'>8</text>
+                            <text x='130' y='48' text-anchor='middle' dominant-baseline='central'>10</text>
+                            <text x='167' y='57' text-anchor='middle' dominant-baseline='central'>12</text>
+                            <text x='196' y='82' text-anchor='middle' dominant-baseline='central'>14</text>
+                            <text x='211' y='117' text-anchor='middle' dominant-baseline='central'>16</text>
+                            <text x='208' y='155' text-anchor='middle' dominant-baseline='central'>18</text>
+                            <text x='188' y='188' text-anchor='middle' dominant-baseline='central'>20</text>
+                        </g>
+
+                        <!-- Sleek Outer Speed Pointer -->
+                        <g id="cockpit-speed-needle-group" style="transform-origin: 130px 130px; transform: rotate(-135deg); transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);">
+                            <polygon points="130,22 123,46 137,46" fill="#00f0ff" filter="url(#cockpitNeonGlow)"/>
+                            <circle cx="130" cy="36" r="3" fill="#ffffff"/>
+                        </g>
+                    </svg>
+
+                    <!-- Digital Readout -->
+                    <div class="gauge-center-content">
+                        <div class="gauge-center-val" id="cockpit-nav-speed-knots" style="font-size: clamp(2.4rem, 6vh, 3.4rem); font-weight: 900; line-height: 1;">0.0</div>
+                        <div class="gauge-center-unit" style="font-size: 0.82rem; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px;">VOZLOV (kt)</div>
+                        <div class="gauge-center-sub" id="cockpit-nav-speed-kmh" style="font-size: 1.05rem; font-weight: 700; color: #cbd5e1; margin-top: 2px;">0.0 km/h</div>
+                    </div>
+                </div>
+            `
+        },
+        compass: {
+            title: 'SMER PLOVBE (COG)',
+            icon: 'fa-compass',
+            render: () => `
+                <div class="gauge-display-box cockpit-gauge-box" onclick="requestCompassPermission()" style="cursor: pointer;" title="Kliknite za vklop ali umerjanje senzorja kompasa">
+                    <svg viewBox="0 0 260 260" class="marine-gauge-svg">
+                        <defs>
+                            <radialGradient id="cockpitCompassBgGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#1e293b"/>
+                                <stop offset="85%" stop-color="#0f172a"/>
+                                <stop offset="100%" stop-color="#020617"/>
+                            </radialGradient>
+                            <linearGradient id="cockpitHeadingNeedleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#ef4444"/>
+                                <stop offset="100%" stop-color="#f97316"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Chrome Bezel Outer Ring & Bevel -->
+                        <circle cx="130" cy="130" r="128" fill="url(#cockpitChromeBezelGrad)"/>
+                        <circle cx="130" cy="130" r="122" fill="url(#cockpitChromeInnerGrad)"/>
+                        <!-- Decorative Chrome Screws -->
+                        <circle cx="130" cy="6.5" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="128.5" y1="6.5" x2="131.5" y2="6.5" stroke="#334155" stroke-width="0.8"/>
+                        <circle cx="253.5" cy="130" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="253.5" y1="128.5" x2="253.5" y2="131.5" stroke="#334155" stroke-width="0.8"/>
+                        <circle cx="130" cy="253.5" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="128.5" y1="253.5" x2="131.5" y2="253.5" stroke="#334155" stroke-width="0.8"/>
+                        <circle cx="6.5" cy="130" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="6.5" y1="128.5" x2="6.5" y2="131.5" stroke="#334155" stroke-width="0.8"/>
+
+                        <!-- Inner Dark Dial Face Disc -->
+                        <circle cx="130" cy="130" r="118" fill="url(#cockpitCompassBgGrad)" stroke="#0f172a" stroke-width="2"/>
+                        <circle cx="130" cy="130" r="116" fill="none" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2"/>
+
+                        <!-- Fixed Top Heading Lubber Line / Reference Index Marker -->
+                        <polygon points="130,10 121,24 139,24" fill="#00f0ff" filter="url(#cockpitNeonGlow)"/>
+
+                        <!-- Rotating Compass Dial Card -->
+                        <g id="cockpit-compass-dial-group" style="transform-origin: 130px 130px; transform: rotate(0deg); transition: transform 0.15s ease-out;">
+                            <circle cx="130" cy="130" r="108" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2"/>
+                            <circle cx="130" cy="130" r="94" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                            
+                            <!-- Degree Ticks -->
+                            <g class="gauge-ticks">
+                                <!-- Cardinal & Quadrant Major Ticks -->
+                                <g stroke="#ffffff" stroke-width="2.8" opacity="0.95">
+                                    <line x1="130" y1="22" x2="130" y2="36" stroke="#ef4444" stroke-width="3.8"/>
+                                    <line x1="206.4" y1="53.6" x2="196.5" y2="63.5"/>
+                                    <line x1="238" y1="130" x2="224" y2="130"/>
+                                    <line x1="206.4" y1="206.4" x2="196.5" y2="196.5"/>
+                                    <line x1="130" y1="238" x2="130" y2="224"/>
+                                    <line x1="53.6" y1="206.4" x2="63.5" y2="196.5"/>
+                                    <line x1="22" y1="130" x2="36" y2="130"/>
+                                    <line x1="53.6" y1="53.6" x2="63.5" y2="63.5"/>
+                                </g>
+                                <!-- Intermediate Minor Ticks (every 15 deg) -->
+                                <g stroke="#e2e8f0" stroke-width="1.6" opacity="0.85">
+                                    <line x1="158.0" y1="25.6" x2="154.9" y2="34.3"/>
+                                    <line x1="184.0" y1="36.0" x2="178.5" y2="43.5"/>
+                                    <line x1="224.0" y1="76.0" x2="216.5" y2="81.5"/>
+                                    <line x1="234.4" y1="102.0" x2="225.7" y2="105.1"/>
+                                    <line x1="234.4" y1="158.0" x2="225.7" y2="154.9"/>
+                                    <line x1="224.0" y1="184.0" x2="216.5" y2="178.5"/>
+                                    <line x1="184.0" y1="224.0" x2="178.5" y2="216.5"/>
+                                    <line x1="158.0" y1="234.4" x2="154.9" y2="225.7"/>
+                                    <line x1="102.0" y1="234.4" x2="105.1" y2="225.7"/>
+                                    <line x1="76.0" y1="224.0" x2="81.5" y2="216.5"/>
+                                    <line x1="36.0" y1="184.0" x2="43.5" y2="178.5"/>
+                                    <line x1="25.6" y1="158.0" x2="34.3" y2="154.9"/>
+                                    <line x1="25.6" y1="102.0" x2="34.3" y2="105.1"/>
+                                    <line x1="36.0" y1="76.0" x2="43.5" y2="81.5"/>
+                                    <line x1="76.0" y1="36.0" x2="81.5" y2="43.5"/>
+                                    <line x1="102.0" y1="25.6" x2="105.1" y2="34.3"/>
+                                </g>
+                            </g>
+
+                            <!-- Degree Numbers around compass ring -->
+                            <g class="gauge-labels" fill="#ffffff" font-family="'Outfit', sans-serif" font-size="11.5" font-weight="800">
+                                <text x="130" y="58" transform="rotate(0, 130, 130)" text-anchor="middle" dominant-baseline="central">0°</text>
+                                <text x="130" y="58" transform="rotate(30, 130, 130)" text-anchor="middle" dominant-baseline="central">30°</text>
+                                <text x="130" y="58" transform="rotate(60, 130, 130)" text-anchor="middle" dominant-baseline="central">60°</text>
+                                <text x="130" y="58" transform="rotate(90, 130, 130)" text-anchor="middle" dominant-baseline="central">90°</text>
+                                <text x="130" y="58" transform="rotate(120, 130, 130)" text-anchor="middle" dominant-baseline="central">120°</text>
+                                <text x="130" y="58" transform="rotate(150, 130, 130)" text-anchor="middle" dominant-baseline="central">150°</text>
+                                <text x="130" y="58" transform="rotate(180, 130, 130)" text-anchor="middle" dominant-baseline="central">180°</text>
+                                <text x="130" y="58" transform="rotate(210, 130, 130)" text-anchor="middle" dominant-baseline="central">210°</text>
+                                <text x="130" y="58" transform="rotate(240, 130, 130)" text-anchor="middle" dominant-baseline="central">240°</text>
+                                <text x="130" y="58" transform="rotate(270, 130, 130)" text-anchor="middle" dominant-baseline="central">270°</text>
+                                <text x="130" y="58" transform="rotate(300, 130, 130)" text-anchor="middle" dominant-baseline="central">300°</text>
+                                <text x="130" y="58" transform="rotate(330, 130, 130)" text-anchor="middle" dominant-baseline="central">330°</text>
+                            </g>
+
+                            <!-- Cardinal Points with High Contrast -->
+                            <g font-family="'Outfit', sans-serif" font-weight="800">
+                                <text x="130" y="44" transform="rotate(0, 130, 130)" text-anchor="middle" dominant-baseline="central" fill="#ef4444" font-size="16.5">S</text>
+                                <text x="130" y="44" transform="rotate(45, 130, 130)" text-anchor="middle" dominant-baseline="central" fill="#00f0ff" font-size="12" font-weight="800">SV</text>
+                                <text x="130" y="44" transform="rotate(90, 130, 130)" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-size="15.5">V</text>
+                                <text x="130" y="44" transform="rotate(135, 130, 130)" text-anchor="middle" dominant-baseline="central" fill="#00f0ff" font-size="12" font-weight="800">JV</text>
+                                <text x="130" y="44" transform="rotate(180, 130, 130)" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-size="15.5">J</text>
+                                <text x="130" y="44" transform="rotate(225, 130, 130)" text-anchor="middle" dominant-baseline="central" fill="#00f0ff" font-size="12" font-weight="800">JZ</text>
+                                <text x="130" y="44" transform="rotate(270, 130, 130)" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-size="15.5">Z</text>
+                                <text x="130" y="44" transform="rotate(315, 130, 130)" text-anchor="middle" dominant-baseline="central" fill="#00f0ff" font-size="12" font-weight="800">SZ</text>
+                            </g>
+                        </g>
+
+                        <!-- GPS COG Course Arrow -->
+                        <g id="cockpit-compass-needle-group" style="transform-origin: 130px 130px; transform: rotate(0deg); transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);">
+                            <polygon points="130,22 121,50 139,50" fill="url(#cockpitHeadingNeedleGrad)" filter="url(#cockpitNeonGlow)"/>
+                            <polygon points="130,238 122,210 138,210" fill="rgba(255,255,255,0.45)"/>
+                        </g>
+                    </svg>
+
+                    <!-- Digital Readout -->
+                    <div class="gauge-center-content">
+                        <div class="gauge-center-val status-text" id="cockpit-nav-heading-deg" style="font-size: clamp(2.2rem, 5.5vh, 3.2rem); font-weight: 900; line-height: 1;">MIROVANJE</div>
+                        <div class="gauge-center-unit" id="cockpit-nav-heading-cardinal" style="font-size: 1rem; font-weight: 800; color: #38bdf8; margin-top: 2px;"></div>
+                    </div>
+                </div>
+            `
+        },
+        guidance: {
+            title: 'SMERNA PUŠČICA (VODENJE)',
+            icon: 'fa-location-arrow',
+            render: () => `
+                <div class="gauge-display-box cockpit-gauge-box">
+                    <svg viewBox="0 0 260 260" class="marine-gauge-svg">
+                        <!-- Chrome Bezel Outer Ring & Bevel -->
+                        <circle cx="130" cy="130" r="128" fill="url(#cockpitChromeBezelGrad)"/>
+                        <circle cx="130" cy="130" r="122" fill="url(#cockpitChromeInnerGrad)"/>
+                        <!-- Decorative Chrome Screws -->
+                        <circle cx="130" cy="6.5" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="128.5" y1="6.5" x2="131.5" y2="6.5" stroke="#334155" stroke-width="0.8"/>
+                        <circle cx="253.5" cy="130" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="253.5" y1="128.5" x2="253.5" y2="131.5" stroke="#334155" stroke-width="0.8"/>
+                        <circle cx="130" cy="253.5" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="128.5" y1="253.5" x2="131.5" y2="253.5" stroke="#334155" stroke-width="0.8"/>
+                        <circle cx="6.5" cy="130" r="3" fill="#e2e8f0" stroke="#334155" stroke-width="0.8"/>
+                        <line x1="6.5" y1="128.5" x2="6.5" y2="131.5" stroke="#334155" stroke-width="0.8"/>
+
+                        <!-- Inner Dark Dial Face Disc -->
+                        <circle cx="130" cy="130" r="118" fill="url(#cockpitGaugeBgGrad)" stroke="#0f172a" stroke-width="2"/>
+                        <circle cx="130" cy="130" r="116" fill="none" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.2"/>
+
+                        <!-- Tactical Guidance Outer Track Ring -->
+                        <circle id="cockpit-guidance-ring" cx="130" cy="130" r="105" fill="none" stroke="#ffffff" stroke-width="5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))"/>
+                        
+                        <!-- Track Reference Ticks -->
+                        <g stroke="rgba(255,255,255,0.4)" stroke-width="1.8">
+                            <line x1="130" y1="25" x2="130" y2="33"/>
+                            <line x1="204.2" y1="55.8" x2="198.6" y2="61.4"/>
+                            <line x1="235" y1="130" x2="227" y2="130"/>
+                            <line x1="204.2" y1="204.2" x2="198.6" y2="198.6"/>
+                            <line x1="130" y1="235" x2="130" y2="227"/>
+                            <line x1="55.8" y1="204.2" x2="61.4" y2="198.6"/>
+                            <line x1="25" y1="130" x2="33" y2="130"/>
+                            <line x1="55.8" y1="55.8" x2="61.4" y2="61.4"/>
+                        </g>
+
+                        <!-- Top Rim Marker Pip (Bow Heading) -->
+                        <g id="cockpit-guidance-rim-marker" style="transform-origin: 130px 130px; transform: rotate(0deg);">
+                            <polygon id="cockpit-guidance-rim-pip" points="130,12 118,26 142,26" fill="#ffffff" filter="drop-shadow(0 2px 6px rgba(0,0,0,0.9))"/>
+                        </g>
+                        
+                        <!-- Rotating Tactical Target Steering Arrow (Sweeps annular ring around central pod) -->
+                        <g id="cockpit-guidance-target-arrow" style="transform-origin: 130px 130px; transform: rotate(0deg); transition: transform 0.25s ease-out;">
+                            <polygon id="cockpit-guidance-arrow-poly" points="130,22 150,68 130,58 110,68" fill="#22c55e" stroke="#0f172a" stroke-width="2.5" filter="url(#cockpitNeonGlow)"/>
+                        </g>
+
+                        <!-- Central Clear Pod Backplate - Shielding Text from Arrow -->
+                        <circle cx="130" cy="130" r="54" fill="#070c18" stroke="rgba(56, 189, 248, 0.45)" stroke-width="2.5" filter="drop-shadow(0 4px 12px rgba(0,0,0,0.9))"/>
+                        <circle cx="130" cy="130" r="50" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+                    </svg>
+
+                    <!-- Digital Readout (Centered precisely inside the Central Pod) -->
+                    <div class="gauge-center-content" style="pointer-events: none;">
+                        <div class="gauge-center-val" id="cockpit-guidance-delta-text" style="color: #22c55e; font-size: clamp(1.85rem, 4.5vh, 2.6rem); font-weight: 900; line-height: 1; margin: 0; text-shadow: 0 0 12px rgba(34, 197, 94, 0.5);">&#10003; 0&deg;</div>
+                        <div class="gauge-center-unit" id="cockpit-guidance-sub-text" style="font-size: 0.76rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.8px; margin-top: 3px;">ODSTOPANJE</div>
+                    </div>
+                </div>
+            `
+        }
+    };
+
+    const guidanceAvailable = isGuidanceConditionMet();
+    const visibleKeys = cockpitConfig.order.filter(k => {
+        if (cockpitConfig.hidden.includes(k)) return false;
+        if (k === 'guidance' && !guidanceAvailable) return false;
+        return true;
+    });
+
+    let stageHtml = '';
+
+    visibleKeys.forEach((key, idx) => {
+        const def = instDefinitions[key];
+        if (!def) return;
+        const isFirst = (idx === 0);
+        const isLast = (idx === visibleKeys.length - 1);
+
+        stageHtml += `
+            <div class="cockpit-inst-card" id="cockpit-card-${key}">
+                <div class="cockpit-inst-header">
+                    <span class="cockpit-inst-title"><i class="fa-solid ${def.icon}"></i> ${def.title}</span>
+                    <div class="cockpit-inst-ctrls">
+                        <button type="button" class="cockpit-nav-arrow-btn" onclick="moveCockpitInstrument('${key}', -1)" ${isFirst ? 'disabled style="opacity:0.3;cursor:default;"' : ''} title="Premakni levo">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button type="button" class="cockpit-nav-arrow-btn" onclick="moveCockpitInstrument('${key}', 1)" ${isLast ? 'disabled style="opacity:0.3;cursor:default;"' : ''} title="Premakni desno">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                        <button type="button" class="cockpit-inst-trash-btn" onclick="hideCockpitInstrument('${key}')" title="Odstrani instrument">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="cockpit-inst-body">
+                    ${def.render()}
+                </div>
+            </div>
+        `;
+    });
+
+    stage.innerHTML = stageHtml;
+
+    // Handle restore menu
+    if (cockpitConfig.hidden.length > 0) {
+        if (restoreDropdown) restoreDropdown.style.display = 'block';
+        if (restoreMenu) {
+            let menuHtml = '';
+            cockpitConfig.hidden.forEach(k => {
+                const d = instDefinitions[k];
+                if (d) {
+                    menuHtml += `<button type="button" class="cockpit-restore-item" onclick="restoreCockpitInstrument('${k}')"><i class="fa-solid ${d.icon}"></i> Dodaj ${d.title}</button>`;
+                }
+            });
+            restoreMenu.innerHTML = menuHtml;
+        }
+    } else {
+        if (restoreDropdown) restoreDropdown.style.display = 'none';
+        if (restoreMenu) restoreMenu.style.display = 'none';
+    }
+}
+window.renderCockpitInstruments = renderCockpitInstruments;
+
+// Extend updateGpsUI and other visual tickers to sync with cockpit elements
+const originalUpdateGpsUI = updateGpsUI;
+updateGpsUI = function(position) {
+    originalUpdateGpsUI(position);
+    try {
+        const coords = position.coords;
+        const speedKnots = (coords.speed !== null && !isNaN(coords.speed)) ? (coords.speed * 1.94384) : 0;
+        const speedKmh = speedKnots * 1.852;
+        
+        const cSpeedKnotsEl = document.getElementById('cockpit-nav-speed-knots');
+        const cSpeedKmhEl = document.getElementById('cockpit-nav-speed-kmh');
+        const cSpeedArc = document.getElementById('cockpit-speed-gauge-arc');
+        const cSpeedNeedle = document.getElementById('cockpit-speed-needle-group');
+
+        if (cSpeedKnotsEl) cSpeedKnotsEl.textContent = speedKnots.toFixed(1);
+        if (cSpeedKmhEl) cSpeedKmhEl.textContent = `${speedKmh.toFixed(1)} km/h`;
+
+        const clampedKnots = Math.min(Math.max(speedKnots, 0), 20);
+        const speedRatio = clampedKnots / 20;
+        const maxArcDash = 490;
+        const currentOffset = maxArcDash * (1 - speedRatio);
+        if (cSpeedArc) cSpeedArc.style.strokeDashoffset = currentOffset;
+        if (cSpeedNeedle) {
+            const needleDeg = -135 + (speedRatio * 270);
+            cSpeedNeedle.style.transform = `rotate(${needleDeg}deg)`;
+        }
+
+        // Heading & Compass Sync
+        const cHeadingDegEl = document.getElementById('cockpit-nav-heading-deg');
+        const cHeadingCardEl = document.getElementById('cockpit-nav-heading-cardinal');
+        const cCompassDial = document.getElementById('cockpit-compass-dial-group');
+        const cCompassNeedle = document.getElementById('cockpit-compass-needle-group');
+
+        if (cCompassDial && typeof currentDialAngle !== 'undefined') {
+            cCompassDial.style.transform = `rotate(${currentDialAngle}deg)`;
+        }
+        if (cCompassNeedle && typeof currentNeedleAngle !== 'undefined') {
+            cCompassNeedle.style.transform = `rotate(${currentNeedleAngle}deg)`;
+            cCompassNeedle.style.opacity = (lastGpsHeading !== null && lastGpsSpeedKnots >= 0.4) ? '1' : '0.35';
+        }
+
+        const hDegEl = document.getElementById('nav-heading-deg');
+        const hCardEl = document.getElementById('nav-heading-cardinal');
+        if (cHeadingDegEl && hDegEl) {
+            cHeadingDegEl.textContent = hDegEl.textContent;
+            cHeadingDegEl.className = hDegEl.className;
+        }
+        if (cHeadingCardEl && hCardEl) {
+            cHeadingCardEl.textContent = hCardEl.textContent;
+        }
+
+        // Guidance Sync
+        const gDelta = document.getElementById('guidance-delta-text');
+        const cgDelta = document.getElementById('cockpit-guidance-delta-text');
+        const gArrow = document.getElementById('guidance-target-arrow');
+        const cgArrow = document.getElementById('cockpit-guidance-target-arrow');
+        const gPoly = document.getElementById('guidance-arrow-poly');
+        const cgPoly = document.getElementById('cockpit-guidance-arrow-poly');
+        const gRing = document.getElementById('guidance-ring');
+        const cgRing = document.getElementById('cockpit-guidance-ring');
+        const gPip = document.getElementById('guidance-rim-pip');
+        const cgPip = document.getElementById('cockpit-guidance-rim-pip');
+
+        if (gDelta && cgDelta) {
+            cgDelta.textContent = gDelta.textContent;
+            cgDelta.style.color = gDelta.style.color;
+        }
+        if (gArrow && cgArrow) {
+            cgArrow.style.transform = gArrow.style.transform;
+        }
+        if (gPoly && cgPoly) {
+            cgPoly.setAttribute('fill', gPoly.getAttribute('fill'));
+        }
+        if (gRing && cgRing) {
+            cgRing.setAttribute('stroke', gRing.getAttribute('stroke'));
+        }
+        if (gPip && cgPip) {
+            cgPip.setAttribute('fill', gPip.getAttribute('fill'));
+        }
+    } catch (e) {}
+};
+window.updateGpsUI = updateGpsUI;
+
+// Re-render cockpit instruments whenever route or waypoints change
+const originalRecalculateCurrentRoute = recalculateCurrentRoute;
+recalculateCurrentRoute = function() {
+    originalRecalculateCurrentRoute();
+    const overlay = document.getElementById('cockpit-fullscreen-overlay');
+    if (overlay && overlay.style.display !== 'none') {
+        renderCockpitInstruments();
+    }
+};
+window.recalculateCurrentRoute = recalculateCurrentRoute;
+
+const originalClearNavRoute = clearNavRoute;
+clearNavRoute = function() {
+    originalClearNavRoute();
+    const overlay = document.getElementById('cockpit-fullscreen-overlay');
+    if (overlay && overlay.style.display !== 'none') {
+        renderCockpitInstruments();
+    }
+};
+window.clearNavRoute = clearNavRoute;
+
+// Auto-initialize favorite destinations on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadFavoriteDestinations();
+    renderFavoriteDestinationsUI();
+});

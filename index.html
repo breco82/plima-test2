@@ -394,6 +394,7 @@
                     <div class="gauge-card">
                         <div class="gauge-card-header">
                             <span class="gauge-card-title"><i class="fa-solid fa-gauge-high"></i> Hitrost plovbe (SOG)</span>
+                            <button type="button" class="btn-gauge-fullscreen" onclick="openCockpitFullscreen()" title="Celozaslonski kokpit instrumentov (ležeče)"><i class="fa-solid fa-expand"></i> Kokpit</button>
                         </div>
                         <div class="gauge-display-box">
                             <svg viewBox="0 0 260 260" class="marine-gauge-svg">
@@ -664,8 +665,7 @@
                     <div class="nav-map-header">
                         <span class="nav-map-title"><i class="fa-solid fa-map-location-dot"></i> Navtična karta</span>
                         <div class="nav-map-layer-pills">
-                            <button class="map-pill-btn active" id="pill-layer-cmap" onclick="setNavMapLayer('cmap')" title="C-Map navtična karta (boje, svetilniki, cevovodi, izobate)"><i class="fa-solid fa-anchor"></i> C-Map</button>
-                            <button class="map-pill-btn" id="pill-layer-navionics" onclick="setNavMapLayer('navionics')" title="Navionics Garmin navtična karta"><i class="fa-solid fa-compass"></i> Navionics</button>
+                            <button class="map-pill-btn active" id="pill-layer-cmap" onclick="setNavMapLayer('cmap')" title="Navtična karta (boje, svetilniki, cevovodi, izobate v metrih)"><i class="fa-solid fa-anchor"></i> Navtična karta</button>
                             <button class="map-pill-btn" id="pill-layer-osm" onclick="setNavMapLayer('osm')">Zemljevid</button>
                             <button class="map-pill-btn" id="pill-layer-satellite" onclick="setNavMapLayer('satellite')">Satelit</button>
                             <button class="map-pill-btn" id="pill-layer-guide103" onclick="toggleGuideDemarcation103()" title="Prikaži 103 obalne točke 200m pasu"><i class="fa-solid fa-draw-polygon"></i> 200m točke (103)</button>
@@ -742,6 +742,16 @@
                                 <button type="button" class="wp-action-btn delete-btn" onclick="clearWaypointTarget('dest', event)" title="Počisti cilj">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Priljubljeni cilji (Favorites) -->
+                        <div class="favorite-destinations-card" id="favorite-destinations-card">
+                            <div class="fav-dests-header">
+                                <span class="fav-dests-title"><i class="fa-solid fa-star"></i> Priljubljeni cilji:</span>
+                            </div>
+                            <div class="fav-dests-pills" id="fav-dests-pills">
+                                <!-- Dinamično generirani priljubljeni cilji -->
                             </div>
                         </div>
 
@@ -828,5 +838,51 @@
     <script src="Arcots.js"></script>
     <script src="TideCalculator.js"></script>
     <script src="index.js"></script>
+
+    <!-- Fullscreen Cockpit Overlay (Landscape Locked) -->
+    <div id="cockpit-fullscreen-overlay" class="cockpit-fullscreen-overlay" style="display: none;">
+        <div class="cockpit-top-bar">
+            <div class="cockpit-title-group">
+                <i class="fa-solid fa-gauge-high"></i>
+                <span>KOKPIT INSTRUMENTOV</span>
+            </div>
+            <div class="cockpit-actions-group">
+                <div class="cockpit-restore-dropdown" id="cockpit-restore-dropdown" style="display: none;">
+                    <button type="button" class="cockpit-restore-btn" onclick="toggleCockpitRestoreMenu()">
+                        <i class="fa-solid fa-plus"></i> Dodaj instrument
+                    </button>
+                    <div class="cockpit-restore-menu" id="cockpit-restore-menu" style="display: none;"></div>
+                </div>
+                <button type="button" class="cockpit-close-btn" onclick="closeCockpitFullscreen()" title="Zapri celozaslonski način (ESC)">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+        <div class="cockpit-stage" id="cockpit-stage">
+            <!-- Dinamično generirani instrumenti -->
+        </div>
+    </div>
+
+    <!-- Modal za dodajanje priljubljenega cilja -->
+    <div id="fav-dest-modal" class="fav-dest-modal-overlay" style="display: none;" onclick="closeAddFavoriteModal(event)">
+        <div class="fav-dest-modal-box" onclick="event.stopPropagation()">
+            <div class="fav-dest-modal-header">
+                <span><i class="fa-solid fa-star"></i> Dodaj priljubljeni cilj</span>
+                <button type="button" class="modal-close-btn" onclick="closeAddFavoriteModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="fav-dest-modal-body">
+                <label class="fav-input-label" for="fav-dest-name-input">Ime cilja (npr. Mandrač Piran, Moja boja):</label>
+                <input type="text" id="fav-dest-name-input" class="fav-dest-input" placeholder="Vnesite ime cilja..." maxlength="28">
+                <div class="fav-dest-options">
+                    <button type="button" class="fav-opt-btn btn-gps-fav" onclick="submitAddFavorite('gps')">
+                        <i class="fa-solid fa-location-crosshairs"></i> Uporabi trenutno GPS lokacijo
+                    </button>
+                    <button type="button" class="fav-opt-btn btn-map-fav" onclick="submitAddFavorite('map')">
+                        <i class="fa-solid fa-map-pin"></i> Izberi s klikom na zemljevid
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
