@@ -5296,7 +5296,9 @@ function initNavMap() {
 
     navMap = L.map('nav-map', {
         center: [initialLat, initialLon],
-        zoom: 12,
+        zoom: 13,
+        minZoom: 10,
+        maxZoom: 18,
         zoomControl: true,
         attributionControl: false
     });
@@ -5312,7 +5314,7 @@ function initNavMap() {
     // Base Tile Layers
     navMapLayers.cmap = L.tileLayer('./tiles_cmap/{z}/{x}/{y}.png', {
         minZoom: 10,
-        maxZoom: 16,
+        maxZoom: 18,
         maxNativeZoom: 16,
         bounds: [[45.38, 13.35], [45.78, 13.92]],
         attribution: 'C-Map / Navico'
@@ -5320,7 +5322,7 @@ function initNavMap() {
 
     navMapLayers.navionics = L.tileLayer('./tiles/{z}/{x}/{y}.png', {
         minZoom: 10,
-        maxZoom: 16,
+        maxZoom: 18,
         maxNativeZoom: 16,
         bounds: [[45.38, 13.35], [45.78, 13.92]],
         attribution: 'Navionics / Garmin'
