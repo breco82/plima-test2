@@ -2820,7 +2820,47 @@ body.light-theme .fav-dest-chip.active {
 }
 
 /* ==========================================================================
-   FULLSCREEN TACTICAL COCKPIT OVERLAY (LANDSCAPE ORIENTED)
+   APP DISCLAIMER FOOTER
+   ========================================================================== */
+
+.app-disclaimer-footer {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.app-disclaimer-footer p {
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin: 0;
+}
+
+.app-disclaimer-footer strong {
+    color: #e2e8f0;
+}
+
+.app-disclaimer-footer i {
+    color: #f59e0b;
+    margin-right: 5px;
+}
+
+body.light-theme .app-disclaimer-footer {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .app-disclaimer-footer strong {
+    color: #334155;
+}
+
+/* ==========================================================================
+   FULLSCREEN TACTICAL COCKPIT OVERLAY (LANDSCAPE & PORTRAIT RESPONSIVE)
    ========================================================================== */
 
 .cockpit-fullscreen-overlay {
@@ -2936,7 +2976,7 @@ body.light-theme .fav-dest-chip.active {
     transform: scale(1.1);
 }
 
-/* Cockpit Instruments Stage */
+/* Cockpit Instruments Stage - Landscape default */
 .cockpit-stage {
     display: flex;
     flex-direction: row;
@@ -3071,4 +3111,40 @@ body.light-theme .fav-dest-chip.active {
     z-index: 10;
     pointer-events: none;
     width: 100%;
+}
+
+/* Portrait Responsive Layout for Fullscreen Cockpit */
+@media (orientation: portrait), (max-aspect-ratio: 1/1) {
+    .cockpit-fullscreen-overlay {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding: 6px 8px 24px 8px !important;
+    }
+
+    .cockpit-stage {
+        flex-direction: column !important;
+        height: auto !important;
+        flex: 0 0 auto !important;
+        overflow-y: visible !important;
+        gap: 0.85rem !important;
+        padding: 6px 0 20px 0 !important;
+        justify-content: flex-start !important;
+    }
+
+    .cockpit-inst-card {
+        width: 100% !important;
+        max-width: 96vw !important;
+        height: auto !important;
+        min-height: 280px !important;
+        aspect-ratio: 1 / 1 !important;
+        flex: 0 0 auto !important;
+        padding: 6px 8px 10px 8px !important;
+    }
+
+    .cockpit-gauge-box {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: calc(100vw - 36px) !important;
+        aspect-ratio: 1 / 1 !important;
+    }
 }

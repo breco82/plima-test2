@@ -685,10 +685,10 @@
                         <!-- Tactical Cruise Guidance Heading & Target Arrow Widget -->
                         <div class="map-guidance-widget" id="map-guidance-widget" style="display: none;">
                             <svg viewBox="0 0 100 100" class="guidance-svg">
-                                <circle id="guidance-ring" cx="50" cy="50" r="44" fill="none" stroke="#ffffff" stroke-width="4.5" filter="drop-shadow(0 2px 5px rgba(0,0,0,0.75))"/>
+                                <circle id="guidance-ring" cx="50" cy="50" r="44" fill="none" stroke="#0f172a" stroke-width="4.5" filter="drop-shadow(0 2px 5px rgba(0,0,0,0.75))"/>
                                 <!-- Top Rim Marker (Boat Heading / Phone Orientation Pip) -->
                                 <g id="guidance-rim-marker" style="transform-origin: 50px 50px; transform: rotate(0deg);">
-                                    <polygon id="guidance-rim-pip" points="50,1 42,12 58,12" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.85))"/>
+                                    <polygon id="guidance-rim-pip" points="50,1 42,12 58,12" fill="#0f172a" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.85))"/>
                                 </g>
                                 <!-- Rotating Target Arrow -->
                                 <g id="guidance-target-arrow" style="transform-origin: 50px 50px; transform: rotate(0deg); transition: transform 0.25s ease-out;">
@@ -832,6 +832,10 @@
             </div>
             <button class="pwa-btn" id="pwa-install-btn">Namesti</button>
         </div>
+        <!-- Disclaimer Footer -->
+        <footer class="app-disclaimer-footer">
+            <p><i class="fa-solid fa-triangle-exclamation"></i> <strong>Opozorilo:</strong> Vsi podatki, izračuni plimovanja, vremenske napovedi in navigacijski prikazi so zgolj informativne narave. Za varno plovbo vedno uporabljajte uradne pomorske karte in certificirano navigacijsko opremo ter dosledno upoštevajte veljavne pomorske predpise in dejanske razmere na morju.</p>
+        </footer>
     </div>
 
     <!-- Application Logic Scripts -->

@@ -4294,7 +4294,7 @@ function getHeadingCardinal(deg) {
     return cardinals[idx];
 }
 
-// Device Orientation Tracker with Magnetic Declination Correction
+// Device Orientation Tracker with Magnetic Declination & Screen Rotation Correction
 function handleDeviceOrientation(event) {
     let heading = null;
     if (event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null) {
@@ -4304,48 +4304,84 @@ function handleDeviceOrientation(event) {
     }
 
     if (heading !== null && !isNaN(heading)) {
-        phoneMagneticHeading = (heading + MAGNETIC_DECLINATION_SLOVENIA + 360) % 360;
+        let screenAngle = 0;
+        if (typeof window.orientation !== 'undefined') {
+            screenAngle = window.orientation;
+        } else if (screen.orientation && typeof screen.orientation.angle !== 'undefined') {
+            screenAngle = screen.orientation.angle;
+        }
+        phoneMagneticHeading = (heading + screenAngle + MAGNETIC_DECLINATION_SLOVENIA + 360) % 360;
         updateCompassOrientation();
     }
 }
 
 function updateCompassOrientation() {
     try {
-        // 1. Rotate the compass dial smoothly with shortest-angle unwrapping
+        // 1. Rotate both main and cockpit compass dials smoothly with shortest-angle unwrapping
         const targetDial = -phoneMagneticHeading;
         currentDialAngle += getShortestAngleDelta(currentDialAngle, targetDial);
+        
         const compassDial = document.getElementById('compass-dial-group');
         if (compassDial) {
             compassDial.style.transform = `rotate(${currentDialAngle}deg)`;
         }
+        const cCompassDial = document.getElementById('cockpit-compass-dial-group');
+        if (cCompassDial) {
+            cCompassDial.style.transform = `rotate(${currentDialAngle}deg)`;
+        }
 
         // 2. Rotate the GPS COG pointer relative to the dial
         const compassNeedle = document.getElementById('compass-needle-group');
-        if (compassNeedle) {
-            if (lastGpsHeading !== null && lastGpsSpeedKnots >= 0.4) {
-                const targetNeedle = (lastGpsHeading - phoneMagneticHeading);
-                currentNeedleAngle += getShortestAngleDelta(currentNeedleAngle, targetNeedle);
+        const cCompassNeedle = document.getElementById('cockpit-compass-needle-group');
+        const isMoving = (lastGpsHeading !== null && lastGpsSpeedKnots >= 0.4);
+
+        if (isMoving) {
+            const targetNeedle = (lastGpsHeading - phoneMagneticHeading);
+            currentNeedleAngle += getShortestAngleDelta(currentNeedleAngle, targetNeedle);
+            if (compassNeedle) {
                 compassNeedle.style.transform = `rotate(${currentNeedleAngle}deg)`;
                 compassNeedle.style.opacity = '1';
-            } else {
-                compassNeedle.style.opacity = '0.35';
             }
+            if (cCompassNeedle) {
+                cCompassNeedle.style.transform = `rotate(${currentNeedleAngle}deg)`;
+                cCompassNeedle.style.opacity = '1';
+            }
+        } else {
+            if (compassNeedle) compassNeedle.style.opacity = '0.35';
+            if (cCompassNeedle) cCompassNeedle.style.opacity = '0.35';
         }
 
-        // 3. In stationary mode (< 0.4 kt), show current phone magnetic heading on the compass center
+        // 3. In stationary mode (< 0.4 kt), show current phone magnetic heading on both compass centers
         const headingDegEl = document.getElementById('nav-heading-deg');
         const headingCardEl = document.getElementById('nav-heading-cardinal');
-        if (lastGpsSpeedKnots < 0.4 && headingDegEl) {
+        const cHeadingDegEl = document.getElementById('cockpit-nav-heading-deg');
+        const cHeadingCardEl = document.getElementById('cockpit-nav-heading-cardinal');
+
+        if (lastGpsSpeedKnots < 0.4) {
             if (phoneMagneticHeading !== null && !isNaN(phoneMagneticHeading)) {
-                headingDegEl.textContent = `${Math.round(phoneMagneticHeading)}°`;
-                headingDegEl.classList.remove('status-text');
-                if (headingCardEl) {
-                    headingCardEl.textContent = getHeadingCardinal(phoneMagneticHeading);
+                const degText = `${Math.round(phoneMagneticHeading)}°`;
+                const cardText = getHeadingCardinal(phoneMagneticHeading);
+                if (headingDegEl) {
+                    headingDegEl.textContent = degText;
+                    headingDegEl.classList.remove('status-text');
                 }
+                if (headingCardEl) headingCardEl.textContent = cardText;
+                if (cHeadingDegEl) {
+                    cHeadingDegEl.textContent = degText;
+                    cHeadingDegEl.classList.remove('status-text');
+                }
+                if (cHeadingCardEl) cHeadingCardEl.textContent = cardText;
             } else {
-                headingDegEl.textContent = 'MIROVANJE';
-                headingDegEl.classList.add('status-text');
+                if (headingDegEl) {
+                    headingDegEl.textContent = 'MIROVANJE';
+                    headingDegEl.classList.add('status-text');
+                }
                 if (headingCardEl) headingCardEl.textContent = '';
+                if (cHeadingDegEl) {
+                    cHeadingDegEl.textContent = 'MIROVANJE';
+                    cHeadingDegEl.classList.add('status-text');
+                }
+                if (cHeadingCardEl) cHeadingCardEl.textContent = '';
             }
         }
     } catch (e) {
@@ -6364,6 +6400,17 @@ document.addEventListener('visibilitychange', () => {
 
 
 // Tactical Cruise Navigation Guidance Compass & Target Steering Arrow Widget
+function formatGuidanceDeltaHtml(relDelta, absDelta, statusColor) {
+    if (absDelta <= 2) {
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;gap:3px;color:${statusColor};"><span style="font-size:0.85em;">&#10003;</span> 0&deg;</span>`;
+    }
+    if (relDelta > 0) {
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;gap:4px;color:${statusColor};">${Math.round(absDelta)}&deg;<i class="fa-solid fa-caret-right" style="font-size:0.65em;color:${statusColor};"></i></span>`;
+    } else {
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;gap:4px;color:${statusColor};"><i class="fa-solid fa-caret-left" style="font-size:0.65em;color:${statusColor};"></i>${Math.round(absDelta)}&deg;</span>`;
+    }
+}
+
 function updateNavigationGuidanceWidget(boatLat, boatLon, currentSogKnots, currentHeadingDeg) {
     const widget = document.getElementById('map-guidance-widget');
     if (!widget) return;
@@ -6447,23 +6494,23 @@ function updateNavigationGuidanceWidget(boatLat, boatLon, currentSogKnots, curre
         statusColor = '#f59e0b'; // Yellow
     }
 
-    // Outer Circle Ring: White (#ffffff) when stationary (< 0.4 kt), dynamic statusColor when moving (>= 0.4 kt)
+    // MAP WIDGET: Outer Circle Ring: Black (#0f172a) when stationary (< 0.4 kt), dynamic statusColor when moving
     const ringEl = document.getElementById('guidance-ring');
     if (ringEl) {
-        ringEl.setAttribute('stroke', isMoving ? statusColor : '#ffffff');
+        ringEl.setAttribute('stroke', isMoving ? statusColor : '#0f172a');
     }
 
-    // Outer Rim Marker Pip: White (#ffffff) pointing at 0° (top of phone) when stationary, dynamic statusColor when moving
+    // MAP WIDGET: Outer Rim Marker Pip: Black (#0f172a) pointing at 0° when stationary, dynamic statusColor when moving
     const rimMarker = document.getElementById('guidance-rim-marker');
     if (rimMarker) {
         rimMarker.style.transform = 'rotate(0deg)';
         const rimPip = document.getElementById('guidance-rim-pip');
         if (rimPip) {
-            rimPip.setAttribute('fill', isMoving ? statusColor : '#ffffff');
+            rimPip.setAttribute('fill', isMoving ? statusColor : '#0f172a');
         }
     }
 
-    // Central Guidance Arrow: Points towards target waypoint relative to current heading
+    // MAP WIDGET: Central Guidance Arrow
     const arrowGroup = document.getElementById('guidance-target-arrow');
     const arrowPoly = document.getElementById('guidance-arrow-poly');
     if (arrowGroup && arrowPoly) {
@@ -6471,20 +6518,14 @@ function updateNavigationGuidanceWidget(boatLat, boatLon, currentSogKnots, curre
         arrowPoly.setAttribute('fill', statusColor);
     }
 
-    // Digital text badge
+    // MAP WIDGET: Digital text badge (Vector Caret)
     const deltaTextEl = document.getElementById('guidance-delta-text');
     if (deltaTextEl) {
         deltaTextEl.style.color = statusColor;
-        if (absDelta <= 2) {
-            deltaTextEl.textContent = '\u2713 0\u00B0';
-        } else if (relDelta > 0) {
-            deltaTextEl.textContent = `${Math.round(absDelta)}\u00B0 \u25B6`;
-        } else {
-            deltaTextEl.textContent = `\u25C0 ${Math.round(absDelta)}\u00B0`;
-        }
+        deltaTextEl.innerHTML = formatGuidanceDeltaHtml(relDelta, absDelta, statusColor);
     }
 
-    // Cockpit Guidance Widget Sync
+    // COCKPIT WIDGET SYNC: Update cockpit guidance elements in real-time
     const cgRing = document.getElementById('cockpit-guidance-ring');
     const cgMarker = document.getElementById('cockpit-guidance-rim-marker');
     const cgPip = document.getElementById('cockpit-guidance-rim-pip');
@@ -6499,13 +6540,7 @@ function updateNavigationGuidanceWidget(boatLat, boatLon, currentSogKnots, curre
     if (cgPoly) cgPoly.setAttribute('fill', statusColor);
     if (cgDelta) {
         cgDelta.style.color = statusColor;
-        if (absDelta <= 2) {
-            cgDelta.textContent = '\u2713 0\u00B0';
-        } else if (relDelta > 0) {
-            cgDelta.textContent = `${Math.round(absDelta)}\u00B0 \u25B6`;
-        } else {
-            cgDelta.textContent = `\u25C0 ${Math.round(absDelta)}\u00B0`;
-        }
+        cgDelta.innerHTML = formatGuidanceDeltaHtml(relDelta, absDelta, statusColor);
     }
 }
 
@@ -6765,7 +6800,12 @@ function openCockpitFullscreen() {
         screen.orientation.lock('landscape').catch(() => {});
     }
 
+    // Ensure orientation and GPS tracking are actively running
+    startOrientationTracking();
+    startGpsNavigation(false);
+
     renderCockpitInstruments();
+    updateCompassOrientation();
     if (lastGpsCoords) {
         updateGpsUI({ coords: lastGpsCoords });
     }
